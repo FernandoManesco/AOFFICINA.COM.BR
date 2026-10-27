@@ -53,13 +53,17 @@ primeiro no T140, migrável para o servidor do cliente.
 ## Roadmap
 | Fase | Conteúdo | Estado |
 |---|---|---|
-| 0 | Infra no T140 (MySQL, venv, systemd, Nginx, DNS, certbot) | **v1 — instalar** |
-| 1 | Auth, empresa/oficinas/recursos, clientes+veículos, catálogo FIPE, agenda (API) | **v1 — pronto (API); telas: login, painel, clientes** |
-| 2 | Telas: agenda, peças, mão de obra, orçamento/pedido; diagnóstico por áudio/escrita (modelo WebTriagem); assistente DeepSeek (problemas, códigos de peça, correção de textos) | próxima |
+| 0 | Infra no T140 (MySQL, venv, systemd, Nginx, DNS, certbot) | feito 27/10/2026 (DNS/certbot pendentes de propagação) |
+| 1 | Auth, empresa/oficinas/recursos, clientes+veículos, catálogo FIPE, agenda | **v2 — API e telas prontas** |
+| 2 | Peças, mão de obra, orçamento→pedido (itens, aprovação, execução, status, impressão) | **v2 — pronto** |
+| 2b | Diagnóstico por áudio/escrita no tablet (modelo WebTriagem); assistente DeepSeek (problemas, códigos de peça, correção de textos de mão de obra) | próxima (v3) — precisa dos repositórios WebTriagem e ia_gateway |
 | 3 | Estoque por lote (FIFO, validade, perda, mínimo), baixa no fechamento do pedido | |
 | 4 | Financeiro: contas a receber/pagar, pagamentos (PIX/cartão/dinheiro), boletos (clonar do homecare) | |
 | 5 | NFS-e (padrão nacional; GISS só Rio Claro), recibo/OS em PDF | |
 | 6 | Site de venda completo, instalador para servidor do cliente, atualizador | |
+
+## Repositório
+`FernandoManesco/AOFFICINA.COM.BR` (SSH: `git@github.com:FernandoManesco/AOFFICINA.COM.BR.git`). Todo passo de instalação e toda versão = um commit em uma linha.
 
 ## FIPE
 Não há API oficial. Usamos `fipe.parallelum.com.br/api/v2` (projeto deividfortuna/fipe): 500 req/dia sem token,

@@ -229,7 +229,12 @@ def edit_servico(pedido_id: int, item_id: int, d: ServicoItemIn, user=Depends(us
         raise HTTPException(status_code=404, detail="Item não encontrado")
     horas = d.horas if d.horas is not None else float(it["HORAS"])
     vhora = d.valor_hora_cent if d.valor_hora_cent is not None else it["VALOR_HORA_CENT"]
-    vcent = d.valor_cent if d.valor_cent is not None else round(vhora * horas)
+    if d.valor_cent is not None:
+        vcent = d.valor_cent
+    elif d.horas is None and d.valor_hora_cent is None:
+        vcent = it["VALOR_CENT"]          # só mudou autorizado/descrição: preserva valor fechado
+    else:
+        vcent = round(vhora * horas)
     db.executar(con, """UPDATE PEDIDO_SERVICO SET DESCRICAO=%s, FUNCIONARIO_ID=%s, HORAS=%s, VALOR_HORA_CENT=%s, VALOR_CENT=%s,
                         AUTORIZADO=%s WHERE ID=%s""",
                 [(d.descricao or it["DESCRICAO"]).strip(), d.funcionario_id if d.funcionario_id is not None else it["FUNCIONARIO_ID"],

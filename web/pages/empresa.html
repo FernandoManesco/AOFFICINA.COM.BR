@@ -2,18 +2,49 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — empresa</title>
+<title>aOfficina — Empresa</title>
 <link rel="icon" href="/img/favicon.png">
 <link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="/css/app.css?v=1" rel="stylesheet">
+<link href="/css/app.css?v=2" rel="stylesheet">
 </head>
 <body data-pagina="empresa">
 <main id="conteudo">
-  <div class="card card-ao"><div class="card-body text-center text-muted py-5"><i class="bi bi-cone-striped fs-1 d-block mb-2 text-warning"></i>Tela <b>empresa</b> — em construção (próxima versão)</div></div>
+  <h4 class="mb-3"><i class="bi bi-building me-2 text-secondary"></i>Empresa</h4>
+  <div class="card card-ao" style="max-width:900px">
+    <div class="card-header">Dados da empresa (aparecem no orçamento, no pedido e nos recibos)</div>
+    <div class="card-body"><form id="f"><div class="row g-2">
+      <div class="col-md-7"><label class="form-label">Razão social *</label><input class="form-control" id="razao_social" required maxlength="120"></div>
+      <div class="col-md-5"><label class="form-label">Nome fantasia *</label><input class="form-control" id="fantasia" required maxlength="80"></div>
+      <div class="col-md-4"><label class="form-label">CNPJ</label><input class="form-control" id="cnpj" maxlength="18"></div>
+      <div class="col-md-4"><label class="form-label">Inscrição estadual</label><input class="form-control" id="ie" maxlength="20"></div>
+      <div class="col-md-4"><label class="form-label">Inscrição municipal</label><input class="form-control" id="im" maxlength="20"></div>
+      <div class="col-md-4"><label class="form-label">Telefone</label><input class="form-control" id="telefone"></div>
+      <div class="col-md-8"><label class="form-label">E-mail</label><input type="email" class="form-control" id="email"></div>
+      <div class="col-md-3"><label class="form-label">CEP</label><input class="form-control" id="cep" maxlength="9"></div>
+      <div class="col-md-7"><label class="form-label">Logradouro</label><input class="form-control" id="logradouro"></div>
+      <div class="col-md-2"><label class="form-label">Nº</label><input class="form-control" id="numero"></div>
+      <div class="col-md-4"><label class="form-label">Complemento</label><input class="form-control" id="complemento"></div>
+      <div class="col-md-4"><label class="form-label">Bairro</label><input class="form-control" id="bairro"></div>
+      <div class="col-md-3"><label class="form-label">Cidade</label><input class="form-control" id="cidade"></div>
+      <div class="col-md-1"><label class="form-label">UF</label><input class="form-control text-uppercase" id="uf" maxlength="2"></div>
+      <div class="col-12 mt-3"><button class="btn btn-cobre"><i class="bi bi-check-lg me-1"></i>Salvar</button></div>
+    </div></form></div>
+  </div>
 </main>
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
-<script>montarLayout();</script>
+<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script>
+montarLayout(); exigirNivel(0);
+const campos = ['razao_social', 'fantasia', 'cnpj', 'ie', 'im', 'telefone', 'email', 'cep', 'logradouro', 'numero', 'complemento', 'bairro', 'cidade', 'uf'];
+(async () => {
+  try { const e = await API.getEmpresa(); campos.forEach(c => document.getElementById(c).value = e[c.toUpperCase()] || ''); }
+  catch (e) { mostrarAlerta(e.message, 'danger'); }
+})();
+document.getElementById('f').onsubmit = async (ev) => {
+  ev.preventDefault(); const d = {}; campos.forEach(c => d[c] = document.getElementById(c).value || null);
+  try { await API.putEmpresa(d); mostrarAlerta('Dados da empresa salvos'); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+</script>
 </body>
 </html>

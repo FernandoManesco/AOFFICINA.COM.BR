@@ -2,18 +2,246 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — pedido</title>
+<title>aOfficina — Pedido</title>
 <link rel="icon" href="/img/favicon.png">
 <link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="/css/app.css?v=1" rel="stylesheet">
+<link href="/css/app.css?v=2" rel="stylesheet">
+<style>
+  .item-exec { background: #f0faf2; }
+  .item-nao { opacity: .55; text-decoration: line-through; }
+  .sug { z-index: 1060; max-height: 240px; overflow: auto; }
+  @media print {
+    nav, footer, .sidebar-ao, .no-print, .btn { display: none !important; }
+    #conteudo { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; }
+    .card-ao { box-shadow: none; border: 1px solid #ccc; }
+    .print-cab { display: flex !important; }
+  }
+
+</style>
 </head>
-<body data-pagina="pedido">
+<body data-pagina="pedidos">
 <main id="conteudo">
-  <div class="card card-ao"><div class="card-body text-center text-muted py-5"><i class="bi bi-cone-striped fs-1 d-block mb-2 text-warning"></i>Tela <b>pedido</b> — em construção (próxima versão)</div></div>
+  <div class="print-cab mb-3 d-none align-items-center gap-3"><img src="/img/aofficina-cobre.png" style="height:40px"><div><div class="fw-bold" id="pEmpresa"></div><div class="small" id="pEmpresaEnd"></div></div></div>
+
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <a class="btn btn-outline-secondary btn-sm no-print" href="/pages/pedidos.html"><i class="bi bi-arrow-left"></i></a>
+      <h4 class="mb-0" id="titulo">Pedido</h4><span id="status"></span>
+    </div>
+    <div class="d-flex gap-2 flex-wrap no-print" id="acoes"></div>
+  </div>
+
+  <div class="row g-3">
+    <!-- Cabeçalho -->
+    <div class="col-lg-8">
+      <div class="card card-ao h-100"><div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6"><div class="small text-muted">Cliente</div><div class="fw-bold" id="cliNome"></div><div class="small" id="cliContato"></div></div>
+          <div class="col-md-6"><div class="small text-muted">Veículo</div><div><span class="placa" id="placa"></span> <b id="veic"></b></div><div class="small" id="veicDet"></div></div>
+          <div class="col-md-3"><label class="form-label small text-muted mb-0">Km de entrada</label><input type="number" class="form-control form-control-sm cab" id="km_entrada" min="0"></div>
+          <div class="col-md-5"><label class="form-label small text-muted mb-0">Mecânico responsável</label><select class="form-select form-select-sm cab" id="funcionario_id"><option value="">—</option></select></div>
+          <div class="col-md-4"><label class="form-label small text-muted mb-0">Previsão de entrega</label><input type="datetime-local" class="form-control form-control-sm cab" id="previsao_entrega"></div>
+          <div class="col-md-6"><label class="form-label small text-muted mb-0">Queixa do cliente</label><textarea class="form-control form-control-sm cab" id="queixa" rows="3"></textarea></div>
+          <div class="col-md-6"><label class="form-label small text-muted mb-0">Diagnóstico do mecânico <span class="badge text-bg-light border no-print" title="Na v3: ditar por áudio ou escrever no tablet"><i class="bi bi-mic"></i> em breve</span></label><textarea class="form-control form-control-sm cab" id="diagnostico" rows="3"></textarea></div>
+          <div class="col-12"><label class="form-label small text-muted mb-0">Observações</label><input class="form-control form-control-sm cab" id="observacao"></div>
+          <div class="col-12 no-print"><button class="btn btn-sm btn-outline-cobre" id="btnSalvarCab" disabled><i class="bi bi-check-lg me-1"></i>Salvar cabeçalho</button> <span class="small text-muted ms-2" id="guinchoTag"></span></div>
+        </div>
+      </div></div>
+    </div>
+    <!-- Totais -->
+    <div class="col-lg-4">
+      <div class="card card-ao h-100"><div class="card-body">
+        <div class="d-flex justify-content-between"><span>Mão de obra</span><b id="tServ">R$ 0,00</b></div>
+        <div class="d-flex justify-content-between"><span>Peças</span><b id="tPecas">R$ 0,00</b></div>
+        <div class="d-flex justify-content-between align-items-center mt-1"><span>Desconto</span><div class="input-group input-group-sm" style="width:140px"><span class="input-group-text">R$</span><input type="number" step="0.01" min="0" class="form-control text-end" id="desconto"></div></div>
+        <hr><div class="d-flex justify-content-between fs-5"><span>Total</span><b id="tTotal" class="text-success">R$ 0,00</b></div>
+        <div class="small text-muted mt-2" id="tempoPrev"></div>
+        <div class="small text-muted" id="datas"></div>
+      </div></div>
+    </div>
+
+    <!-- Serviços -->
+    <div class="col-12">
+      <div class="card card-ao">
+        <div class="card-header d-flex justify-content-between align-items-center"><span><i class="bi bi-tools me-2"></i>Mão de obra / serviços</span></div>
+        <div class="card-body pb-0 no-print" id="addServ">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-5 position-relative"><label class="form-label small mb-0">Serviço (busca no cadastro ou descrição livre)</label><input class="form-control" id="s_busca" autocomplete="off" placeholder="ex.: pastilha, alinhamento..."><input type="hidden" id="s_id"><div class="list-group position-absolute shadow w-100 sug" id="s_sug" style="display:none"></div></div>
+            <div class="col-md-2"><label class="form-label small mb-0">Horas</label><input type="number" step="0.25" min="0" class="form-control" id="s_horas" placeholder="auto"></div>
+            <div class="col-md-2"><label class="form-label small mb-0">Valor/hora R$</label><input type="number" step="0.01" min="0" class="form-control" id="s_vh" placeholder="auto"></div>
+            <div class="col-md-2"><label class="form-label small mb-0">Valor fechado R$</label><input type="number" step="0.01" min="0" class="form-control" id="s_vt" placeholder="opcional"></div>
+            <div class="col-md-1"><button class="btn btn-cobre w-100" id="btnAddServ"><i class="bi bi-plus-lg"></i></button></div>
+          </div>
+        </div>
+        <div class="table-responsive"><table class="table table-ao table-sm mb-0 mt-2">
+          <thead><tr><th>Serviço</th><th>Mecânico</th><th class="text-end">Horas</th><th class="text-end">R$/h</th><th class="text-end">Valor</th><th class="text-center">Autorizado</th><th class="text-center">Executado</th><th class="no-print"></th></tr></thead>
+          <tbody id="tbServ"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- Peças -->
+    <div class="col-12">
+      <div class="card card-ao">
+        <div class="card-header"><i class="bi bi-gear-wide-connected me-2"></i>Peças</div>
+        <div class="card-body pb-0 no-print" id="addPeca">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-6 position-relative"><label class="form-label small mb-0">Peça (código, part number, nome) ou descrição livre</label><input class="form-control" id="p_busca" autocomplete="off"><input type="hidden" id="p_id"><div class="list-group position-absolute shadow w-100 sug" id="p_sug" style="display:none"></div></div>
+            <div class="col-md-2"><label class="form-label small mb-0">Qtd</label><input type="number" step="0.001" min="0.001" class="form-control" id="p_qtd" value="1"></div>
+            <div class="col-md-3"><label class="form-label small mb-0">Valor unit. R$</label><input type="number" step="0.01" min="0" class="form-control" id="p_vu" placeholder="auto"></div>
+            <div class="col-md-1"><button class="btn btn-cobre w-100" id="btnAddPeca"><i class="bi bi-plus-lg"></i></button></div>
+          </div>
+        </div>
+        <div class="table-responsive"><table class="table table-ao table-sm mb-0 mt-2">
+          <thead><tr><th>Peça</th><th class="text-end">Qtd</th><th class="text-end">Unit.</th><th class="text-end">Valor</th><th class="text-center">Autorizada</th><th class="no-print"></th></tr></thead>
+          <tbody id="tbPecas"></tbody></table></div>
+      </div>
+    </div>
+  </div>
 </main>
+
+<!-- Executar serviço -->
+<div class="modal fade" id="mExec" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="fExec">
+  <div class="modal-header"><h5 class="modal-title">Registrar execução</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <div class="fw-bold mb-2" id="execTitulo"></div>
+    <div class="mb-2"><label class="form-label">Quem executou</label><select class="form-select" id="exec_func"><option value="">—</option></select></div>
+    <div class="mb-2"><label class="form-label">O que foi feito</label><textarea class="form-control" id="exec_desc" rows="4" placeholder="descreva o serviço executado, peças trocadas, observações para o cliente"></textarea></div>
+    <div class="form-check"><input class="form-check-input" type="checkbox" id="exec_ok" checked><label class="form-check-label" for="exec_ok">Serviço concluído</label></div>
+  </div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+</form></div></div></div>
+
+<!-- Aprovar -->
+<div class="modal fade" id="mAprov" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="fAprov">
+  <div class="modal-header"><h5 class="modal-title">Aprovar orçamento → abrir pedido</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body">
+    <p class="small text-muted">Só os itens marcados como <b>autorizados</b> entram no pedido. Desmarque o que o cliente não aprovou antes de confirmar.</p>
+    <div class="mb-2"><label class="form-label">Aprovado por (nome de quem autorizou) *</label><input class="form-control" id="aprov_nome" required maxlength="100"></div>
+    <div class="mb-2"><label class="form-label">Mecânico responsável</label><select class="form-select" id="aprov_func"><option value="">—</option></select></div>
+    <div class="mb-2"><label class="form-label">Previsão de entrega</label><input type="datetime-local" class="form-control" id="aprov_prev"></div>
+  </div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-success"><i class="bi bi-check2-circle me-1"></i>Aprovar</button></div>
+</form></div></div></div>
+
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
-<script>montarLayout();</script>
+<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script>
+montarLayout();
+const $ = (id) => document.getElementById(id); const ID = parseInt(new URLSearchParams(location.search).get('id'));
+const mExec = new bootstrap.Modal('#mExec'), mAprov = new bootstrap.Modal('#mAprov');
+let P = null, funcs = [], execItem = null; const TRAVADOS = ['CONCLUIDO', 'ENTREGUE', 'FATURADO', 'CANCELADO'];
+const nivel = getNivel();
+
+async function carregar() {
+  try {
+    if (!funcs.length) { funcs = (await API.getFuncionarios()).filter(f => f.ATIVO); const o = '<option value="">—</option>' + funcs.map(f => `<option value="${f.ID}">${esc(f.NOME)}</option>`).join(''); ['funcionario_id', 'exec_func', 'aprov_func'].forEach(i => $(i).innerHTML = o);
+      try { const e = await API.getEmpresa(); $('pEmpresa').textContent = e.FANTASIA || e.RAZAO_SOCIAL; $('pEmpresaEnd').textContent = [e.LOGRADOURO, e.NUMERO, e.BAIRRO, e.CIDADE, e.TELEFONE].filter(Boolean).join(' · '); } catch (_) {} }
+    P = await API.getPedido(ID); render();
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+function render() {
+  const ehPed = P.TIPO === 'PEDIDO', editavel = !TRAVADOS.includes(P.STATUS);
+  document.title = 'aOfficina — ' + (ehPed ? 'Pedido ' + P.NUMERO_PEDIDO : 'Orçamento ' + P.NUMERO_ORCAMENTO);
+  $('titulo').textContent = ehPed ? `Pedido nº ${P.NUMERO_PEDIDO}` : `Orçamento nº ${P.NUMERO_ORCAMENTO}`; $('status').innerHTML = badgeStatus(P.STATUS) + (ehPed ? ` <span class="small text-muted">orç. ${P.NUMERO_ORCAMENTO}</span>` : '');
+  $('cliNome').textContent = P.CLIENTE_NOME; $('cliContato').textContent = [formatarFone(P.CLIENTE_WHATSAPP || P.CLIENTE_TELEFONE), formatarDoc(P.CPF_CNPJ)].filter(Boolean).join(' · ');
+  $('placa').textContent = formatarPlaca(P.PLACA); $('veic').textContent = `${P.MARCA} ${P.MODELO}`; $('veicDet').textContent = [P.ANO_FAB && (P.ANO_FAB + (P.ANO_MODELO ? '/' + P.ANO_MODELO : '')), P.COR, P.KM_ATUAL && (Number(P.KM_ATUAL).toLocaleString('pt-BR') + ' km')].filter(Boolean).join(' · ');
+  $('km_entrada').value = P.KM_ENTRADA || ''; $('funcionario_id').value = P.FUNCIONARIO_ID || ''; $('previsao_entrega').value = P.PREVISAO_ENTREGA ? isoLocal(new Date(P.PREVISAO_ENTREGA)) : '';
+  $('queixa').value = P.QUEIXA || ''; $('diagnostico').value = P.DIAGNOSTICO || ''; $('observacao').value = P.OBSERVACAO || ''; $('desconto').value = centParaReais(P.DESCONTO_CENT);
+  $('guinchoTag').innerHTML = P.GUINCHO ? '🚨 chegou de guincho' : ''; $('btnSalvarCab').disabled = true;
+  $('tServ').textContent = formatarMoeda(P.TOTAL_SERVICOS_CENT); $('tPecas').textContent = formatarMoeda(P.TOTAL_PECAS_CENT); $('tTotal').textContent = formatarMoeda(P.TOTAL_CENT);
+  const minutos = P.servicos.filter(s => s.AUTORIZADO).reduce((a, s) => a + Math.round(Number(s.HORAS) * 60), 0);
+  $('tempoPrev').textContent = minutos ? `Tempo previsto de mão de obra: ${minutosParaTexto(minutos)}` : '';
+  $('datas').innerHTML = [`Aberto ${formatarDataHora(P.ABERTO_EM)}`, P.APROVADO_EM && `Aprovado ${formatarDataHora(P.APROVADO_EM)} por ${esc(P.APROVADO_POR_NOME || '')}`, P.CONCLUIDO_EM && `Concluído ${formatarDataHora(P.CONCLUIDO_EM)}`, P.ENTREGUE_EM && `Entregue ${formatarDataHora(P.ENTREGUE_EM)}`].filter(Boolean).join('<br>');
+  document.querySelectorAll('.cab, #desconto').forEach(e => e.disabled = !editavel); $('addServ').style.display = editavel ? '' : 'none'; $('addPeca').style.display = editavel ? '' : 'none';
+
+  $('tbServ').innerHTML = P.servicos.length ? P.servicos.map(s => `<tr class="${!s.AUTORIZADO ? 'item-nao' : s.EXECUTADO ? 'item-exec' : ''}">
+    <td>${esc(s.DESCRICAO)}${s.SERVICO_CODIGO ? ' <span class="mono small text-muted">' + esc(s.SERVICO_CODIGO) + '</span>' : ''}${s.DESCRICAO_EXECUTADO ? '<div class="small text-success"><i class="bi bi-check2 me-1"></i>' + esc(s.DESCRICAO_EXECUTADO) + '</div>' : ''}</td>
+    <td class="small">${esc(s.FUNCIONARIO_NOME || '')}</td><td class="text-end">${Number(s.HORAS).toFixed(2)}</td><td class="text-end">${formatarMoeda(s.VALOR_HORA_CENT)}</td><td class="text-end fw-bold">${formatarMoeda(s.VALOR_CENT)}</td>
+    <td class="text-center"><input type="checkbox" class="form-check-input" ${s.AUTORIZADO ? 'checked' : ''} ${editavel ? '' : 'disabled'} onchange="autorizarServ(${s.ID}, this.checked)"></td>
+    <td class="text-center">${ehPed ? `<button class="btn btn-sm ${s.EXECUTADO ? 'btn-success' : 'btn-outline-success'} no-print" ${TRAVADOS.includes(P.STATUS) && !s.EXECUTADO ? 'disabled' : ''} onclick="abrirExec(${s.ID})"><i class="bi ${s.EXECUTADO ? 'bi-check2-all' : 'bi-wrench'}"></i></button>` : '—'}</td>
+    <td class="text-end no-print">${editavel ? `<button class="btn btn-sm btn-outline-danger" onclick="delServ(${s.ID})"><i class="bi bi-trash"></i></button>` : ''}</td></tr>`).join('')
+    : '<tr><td colspan="8" class="text-muted text-center py-3">Nenhum serviço lançado</td></tr>';
+  $('tbPecas').innerHTML = P.pecas.length ? P.pecas.map(p => `<tr class="${!p.AUTORIZADO ? 'item-nao' : ''}">
+    <td>${esc(p.DESCRICAO)}${p.PECA_CODIGO ? ' <span class="mono small text-muted">' + esc(p.PECA_CODIGO) + '</span>' : ''}</td><td class="text-end">${Number(p.QUANTIDADE).toLocaleString('pt-BR')} ${esc(p.UNIDADE || '')}</td>
+    <td class="text-end">${formatarMoeda(p.VALOR_UNIT_CENT)}</td><td class="text-end fw-bold">${formatarMoeda(p.VALOR_CENT)}</td>
+    <td class="text-center"><input type="checkbox" class="form-check-input" ${p.AUTORIZADO ? 'checked' : ''} ${editavel ? '' : 'disabled'} onchange="autorizarPeca(${p.ID}, this.checked)"></td>
+    <td class="text-end no-print">${editavel ? `<button class="btn btn-sm btn-outline-danger" onclick="delPeca(${p.ID})"><i class="bi bi-trash"></i></button>` : ''}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="text-muted text-center py-3">Nenhuma peça lançada</td></tr>';
+
+  // ações por estado
+  const a = []; const st = (s, rot, cls = 'outline-secondary', ic = '') => a.push(`<button class="btn btn-sm btn-${cls}" onclick="mudar('${s}')">${ic}${rot}</button>`);
+  a.push(`<button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i>Imprimir</button>`);
+  if (!ehPed) {
+    if (P.STATUS === 'ABERTO') st('ENVIADO', 'Marcar como enviado ao cliente', 'outline-info', '<i class="bi bi-send me-1"></i>');
+    if (['ABERTO', 'ENVIADO'].includes(P.STATUS) && nivel <= 2) { a.push(`<button class="btn btn-sm btn-success" onclick="abrirAprov()"><i class="bi bi-check2-circle me-1"></i>Aprovar → Pedido</button>`); st('RECUSADO', 'Recusado', 'outline-dark'); }
+  } else {
+    if (P.STATUS === 'APROVADO') st('EM_EXECUCAO', 'Iniciar execução', 'warning', '<i class="bi bi-play-fill me-1"></i>');
+    if (['APROVADO', 'EM_EXECUCAO'].includes(P.STATUS)) st('AGUARDANDO_PECA', 'Aguardando peça', 'outline-warning');
+    if (P.STATUS === 'AGUARDANDO_PECA') st('EM_EXECUCAO', 'Retomar execução', 'warning');
+    if (['APROVADO', 'EM_EXECUCAO', 'AGUARDANDO_PECA'].includes(P.STATUS) && nivel <= 2) st('CONCLUIDO', 'Concluir', 'success', '<i class="bi bi-flag-fill me-1"></i>');
+    if (P.STATUS === 'CONCLUIDO' && nivel <= 2) st('ENTREGUE', 'Entregar ao cliente', 'success', '<i class="bi bi-car-front me-1"></i>');
+  }
+  if (!['ENTREGUE', 'FATURADO', 'CANCELADO'].includes(P.STATUS) && nivel <= 1) st('CANCELADO', 'Cancelar', 'outline-danger');
+  $('acoes').innerHTML = a.join('');
+}
+// ---- cabeçalho ----
+document.querySelectorAll('.cab, #desconto').forEach(e => e.addEventListener('input', () => $('btnSalvarCab').disabled = false));
+$('desconto').addEventListener('change', salvarCab);
+$('btnSalvarCab').onclick = salvarCab;
+async function salvarCab() {
+  const d = { oficina_id: P.OFICINA_ID, cliente_id: P.CLIENTE_ID, veiculo_id: P.VEICULO_ID, tipo: P.TIPO, funcionario_id: $('funcionario_id').value ? parseInt($('funcionario_id').value) : null,
+    km_entrada: $('km_entrada').value ? parseInt($('km_entrada').value) : null, guincho: !!P.GUINCHO, queixa: $('queixa').value || null, diagnostico: $('diagnostico').value || null,
+    observacao: $('observacao').value || null, previsao_entrega: $('previsao_entrega').value ? $('previsao_entrega').value + ':00' : null, desconto_cent: reaisParaCent($('desconto').value) };
+  try { await API.editarPedido(ID, d); mostrarAlerta('Salvo'); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+// ---- serviços ----
+$('s_busca').oninput = debounce(async () => {
+  $('s_id').value = ''; const q = $('s_busca').value.trim(); const box = $('s_sug'); if (q.length < 2) { box.style.display = 'none'; return; }
+  const rs = await API.getServicos({ q, limite: 12 });
+  box.innerHTML = rs.map(s => `<button type="button" class="list-group-item list-group-item-action py-1 small" data-id="${s.ID}" data-nome="${esc(s.NOME)}" data-vh="${s.VALOR_HORA_CENT}" data-min="${s.TEMPO_PREVISTO_MIN}" data-fixo="${s.VALOR_FIXO_CENT ?? ''}">${esc(s.NOME)} <span class="text-muted">· ${minutosParaTexto(s.TEMPO_PREVISTO_MIN)} · ${formatarMoeda(s.VALOR_PREVISTO_CENT)}</span></button>`).join('') || '<div class="list-group-item small text-muted">Nenhum serviço cadastrado com esse nome — será lançado como descrição livre</div>';
+  box.style.display = '';
+  box.querySelectorAll('button').forEach(b => b.onclick = () => { box.style.display = 'none'; $('s_id').value = b.dataset.id; $('s_busca').value = b.dataset.nome; $('s_horas').value = (b.dataset.min / 60).toFixed(2); $('s_vh').value = centParaReais(b.dataset.vh); $('s_vt').value = b.dataset.fixo !== '' ? centParaReais(b.dataset.fixo) : ''; });
+});
+$('btnAddServ').onclick = async () => {
+  const d = { servico_id: $('s_id').value ? parseInt($('s_id').value) : null, descricao: $('s_busca').value.trim() || null, horas: $('s_horas').value ? parseFloat($('s_horas').value) : null,
+    valor_hora_cent: $('s_vh').value !== '' ? reaisParaCent($('s_vh').value) : null, valor_cent: $('s_vt').value !== '' ? reaisParaCent($('s_vt').value) : null };
+  if (!d.servico_id && !d.descricao) return mostrarAlerta('Informe o serviço', 'warning');
+  if (!d.servico_id && d.valor_cent == null && (d.horas == null || d.valor_hora_cent == null)) return mostrarAlerta('Para serviço avulso informe horas e valor/hora, ou um valor fechado', 'warning');
+  $('s_sug').style.display = 'none';
+  try { await API.addServicoPedido(ID, d); ['s_busca', 's_id', 's_horas', 's_vh', 's_vt'].forEach(i => $(i).value = ''); carregar(); $('s_busca').focus(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+async function autorizarServ(item, ok) { try { await API.editServicoPedido(ID, item, { autorizado: ok }); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); carregar(); } }
+async function delServ(item) { if (!confirmar('Remover este serviço do pedido?')) return; try { await API.delServicoPedido(ID, item); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); } }
+function abrirExec(item) { execItem = P.servicos.find(s => s.ID === item); $('execTitulo').textContent = execItem.DESCRICAO; $('exec_func').value = execItem.FUNCIONARIO_ID || P.FUNCIONARIO_ID || ''; $('exec_desc').value = execItem.DESCRICAO_EXECUTADO || ''; $('exec_ok').checked = true; mExec.show(); setTimeout(() => $('exec_desc').focus(), 300); }
+$('fExec').onsubmit = async (ev) => { ev.preventDefault(); try { await API.execServicoPedido(ID, execItem.ID, { executado: $('exec_ok').checked, descricao_executado: $('exec_desc').value || null, funcionario_id: $('exec_func').value ? parseInt($('exec_func').value) : null }); mExec.hide(); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); } };
+// ---- peças ----
+$('p_busca').oninput = debounce(async () => {
+  $('p_id').value = ''; const q = $('p_busca').value.trim(); const box = $('p_sug'); if (q.length < 2) { box.style.display = 'none'; return; }
+  const rs = await API.getPecas({ q, limite: 12 });
+  box.innerHTML = rs.map(p => `<button type="button" class="list-group-item list-group-item-action py-1 small" data-id="${p.ID}" data-nome="${esc(p.NOME)}" data-vu="${p.PRECO_VENDA_CENT}"><span class="mono">${esc(p.CODIGO)}</span> ${esc(p.NOME)} <span class="text-muted">· ${esc(p.FABRICANTE || '')} · ${formatarMoeda(p.PRECO_VENDA_CENT)}</span></button>`).join('') || '<div class="list-group-item small text-muted">Nenhuma peça cadastrada com esse nome — será lançada como descrição livre</div>';
+  box.style.display = '';
+  box.querySelectorAll('button').forEach(b => b.onclick = () => { box.style.display = 'none'; $('p_id').value = b.dataset.id; $('p_busca').value = b.dataset.nome; $('p_vu').value = centParaReais(b.dataset.vu); $('p_qtd').focus(); });
+});
+$('btnAddPeca').onclick = async () => {
+  const d = { peca_id: $('p_id').value ? parseInt($('p_id').value) : null, descricao: $('p_busca').value.trim() || null, quantidade: parseFloat($('p_qtd').value) || 1, valor_unit_cent: $('p_vu').value !== '' ? reaisParaCent($('p_vu').value) : null };
+  if (!d.peca_id && !d.descricao) return mostrarAlerta('Informe a peça', 'warning');
+  if (!d.peca_id && d.valor_unit_cent == null) return mostrarAlerta('Informe o valor unitário da peça avulsa', 'warning');
+  $('p_sug').style.display = 'none';
+  try { await API.addPecaPedido(ID, d); ['p_busca', 'p_id', 'p_vu'].forEach(i => $(i).value = ''); $('p_qtd').value = 1; carregar(); $('p_busca').focus(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+async function autorizarPeca(item, ok) { const p = P.pecas.find(x => x.ID === item); try { await API.editPecaPedido(ID, item, { quantidade: Number(p.QUANTIDADE), autorizado: ok }); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); carregar(); } }
+async function delPeca(item) { if (!confirmar('Remover esta peça do pedido?')) return; try { await API.delPecaPedido(ID, item); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); } }
+// ---- transições ----
+function abrirAprov() { $('aprov_nome').value = P.CLIENTE_NOME; $('aprov_func').value = P.FUNCIONARIO_ID || ''; $('aprov_prev').value = P.PREVISAO_ENTREGA ? isoLocal(new Date(P.PREVISAO_ENTREGA)) : ''; mAprov.show(); }
+$('fAprov').onsubmit = async (ev) => { ev.preventDefault(); try { const r = await API.aprovarPedido(ID, { aprovado_por_nome: $('aprov_nome').value, funcionario_id: $('aprov_func').value ? parseInt($('aprov_func').value) : null, previsao_entrega: $('aprov_prev').value ? $('aprov_prev').value + ':00' : null }); mAprov.hide(); mostrarAlerta('Pedido nº ' + r.numero_pedido + ' aberto'); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); } };
+async function mudar(s) {
+  const msgs = { CANCELADO: 'Cancelar este registro? Não pode ser desfeito.', RECUSADO: 'Marcar orçamento como recusado pelo cliente?', ENTREGUE: 'Confirmar entrega do veículo ao cliente?' };
+  if (msgs[s] && !confirmar(msgs[s])) return;
+  try { await API.statusPedido(ID, s); mostrarAlerta('Status: ' + s.replace('_', ' ')); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+document.addEventListener('click', (ev) => { if (!ev.target.closest('.position-relative')) document.querySelectorAll('.sug').forEach(b => b.style.display = 'none'); });
+carregar();
+</script>
 </body>
 </html>

@@ -2,18 +2,181 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — agenda</title>
+<title>aOfficina — Agenda</title>
 <link rel="icon" href="/img/favicon.png">
 <link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="/css/app.css?v=1" rel="stylesheet">
+<link href="/css/app.css?v=2" rel="stylesheet">
+<style>
+  .ag-wrap { overflow-x: auto; }
+  .ag-grid { display: grid; min-width: 100%; }
+  .ag-head { position: sticky; top: 0; z-index: 5; background: #fff; border-bottom: 2px solid #e3e5e8; padding: .4rem .5rem; font-weight: 600; font-size: .85rem; text-align: center; border-left: 1px solid #eef0f2; }
+  .ag-head .sub { font-weight: 400; color: #8a8f98; font-size: .72rem; }
+  .ag-horas { border-right: 1px solid #e3e5e8; }
+  .ag-hora { height: var(--rowh); font-size: .72rem; color: #8a8f98; text-align: right; padding-right: .4rem; border-top: 1px solid #f1f2f4; }
+  .ag-col { position: relative; border-left: 1px solid #eef0f2; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--rowh) - 1px), #f1f2f4 calc(var(--rowh) - 1px), #f1f2f4 var(--rowh)); cursor: copy; }
+  .ag-ev { position: absolute; left: 3px; right: 3px; border-radius: .4rem; padding: .2rem .4rem; font-size: .74rem; color: #fff; overflow: hidden; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.2); border-left: 4px solid rgba(0,0,0,.25); }
+  .ag-ev.cancelado { opacity: .45; text-decoration: line-through; }
+  .ag-ev .t { font-weight: 600; }
+  .ag-agora { position: absolute; left: 0; right: 0; border-top: 2px solid #dc3545; z-index: 3; pointer-events: none; }
+</style>
 </head>
 <body data-pagina="agenda">
 <main id="conteudo">
-  <div class="card card-ao"><div class="card-body text-center text-muted py-5"><i class="bi bi-cone-striped fs-1 d-block mb-2 text-warning"></i>Tela <b>agenda</b> — em construção (próxima versão)</div></div>
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-calendar-week me-2 text-secondary"></i>Agenda</h4>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <select class="form-select" id="selOficina" style="width:auto"></select>
+      <div class="btn-group"><button class="btn btn-outline-secondary" id="btnAnt"><i class="bi bi-chevron-left"></i></button><button class="btn btn-outline-secondary" id="btnHoje">Hoje</button><button class="btn btn-outline-secondary" id="btnProx"><i class="bi bi-chevron-right"></i></button></div>
+      <input type="date" class="form-control" id="dia" style="width:auto">
+      <button class="btn btn-cobre" id="btnNovo"><i class="bi bi-plus-lg me-1"></i>Agendar</button>
+    </div>
+  </div>
+  <div class="card card-ao"><div class="card-body p-0 ag-wrap" id="agWrap" style="max-height:75vh;overflow-y:auto"><div class="ag-grid" id="grid"></div></div></div>
+  <div class="small text-muted mt-2"><i class="bi bi-info-circle me-1"></i>Clique numa coluna para agendar naquele horário e recurso; clique num compromisso para editar.</div>
 </main>
+
+<div class="modal fade" id="m" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><form id="f">
+  <div class="modal-header"><h5 class="modal-title" id="mt">Agendar</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-md-7 position-relative"><label class="form-label">Cliente (nome, CPF ou placa)</label><input class="form-control" id="cli_busca" autocomplete="off" placeholder="digite para buscar"><input type="hidden" id="cliente_id">
+      <div class="list-group position-absolute shadow w-100" id="cli_sug" style="z-index:1060;max-height:220px;overflow:auto;display:none"></div></div>
+    <div class="col-md-5"><label class="form-label">Veículo</label><select class="form-select" id="veiculo_id"><option value="">—</option></select></div>
+    <div class="col-md-3"><label class="form-label">Tipo</label><select class="form-select" id="tipo"><option>SERVICO</option><option>REVISAO</option><option>ORCAMENTO</option><option>RETORNO</option><option>BLOQUEIO</option></select></div>
+    <div class="col-md-3"><label class="form-label">Início *</label><input type="datetime-local" class="form-control" id="inicio" required></div>
+    <div class="col-md-2"><label class="form-label">Duração (min)</label><input type="number" class="form-control" id="duracao" min="15" step="15" value="60"></div>
+    <div class="col-md-4"><label class="form-label">Status</label><select class="form-select" id="status"><option>AGENDADO</option><option>CONFIRMADO</option><option>CHEGOU</option><option>EM_ATENDIMENTO</option><option>CONCLUIDO</option><option>FALTOU</option><option>CANCELADO</option></select></div>
+    <div class="col-md-6"><label class="form-label">Mecânico / funcionário</label><select class="form-select" id="funcionario_id"><option value="">—</option></select></div>
+    <div class="col-md-6"><label class="form-label">Box / elevador / equipamento</label><select class="form-select" id="equipamento_id"><option value="">—</option></select></div>
+    <div class="col-md-9"><label class="form-label">Título</label><input class="form-control" id="titulo" maxlength="120" placeholder="preenchido com o veículo se deixar vazio"></div>
+    <div class="col-md-3"><label class="form-label">&nbsp;</label><div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="guincho"><label class="form-check-label" for="guincho">Chega de guincho</label></div></div>
+    <div class="col-12"><label class="form-label">Queixa / observações</label><textarea class="form-control" id="descricao" rows="2" placeholder="ex.: barulho no freio ao frear forte"></textarea></div>
+  </div></div>
+  <div class="modal-footer justify-content-between">
+    <div id="acoesEdit" class="d-none gap-1 flex-wrap">
+      <button type="button" class="btn btn-sm btn-outline-info" onclick="mudarStatus('CONFIRMADO')">Confirmar</button>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="mudarStatus('CHEGOU')">Chegou</button>
+      <button type="button" class="btn btn-sm btn-outline-dark" onclick="mudarStatus('FALTOU')">Faltou</button>
+      <button type="button" class="btn btn-sm btn-outline-danger" onclick="mudarStatus('CANCELADO')">Cancelar agend.</button>
+      <a class="btn btn-sm btn-cobre" id="btnOrc" href="#"><i class="bi bi-clipboard2-plus me-1"></i>Abrir orçamento</a>
+    </div>
+    <div><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button> <button class="btn btn-cobre">Salvar</button></div>
+  </div>
+</form></div></div></div>
+
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
-<script>montarLayout();</script>
+<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script>
+montarLayout();
+const $ = (id) => document.getElementById(id); const modal = new bootstrap.Modal('#m');
+const ROWH = 28, SLOT = 30; document.documentElement.style.setProperty('--rowh', ROWH + 'px');
+let oficinas = [], oficina = null, funcs = [], eqs = [], eventos = [], editId = null, abreMin = 480, fechaMin = 1080;
+
+const hm = (t) => { if (typeof t === 'number') return Math.floor(t / 60); const [h, m] = String(t).split(':').map(Number); return h * 60 + (m || 0); };
+const minsDe = (d) => d.getHours() * 60 + d.getMinutes();
+
+async function init() {
+  oficinas = await API.getOficinas();
+  $('selOficina').innerHTML = oficinas.map(o => `<option value="${o.ID}">${esc(o.NOME)}</option>`).join('');
+  const qs = new URLSearchParams(location.search);
+  $('selOficina').value = qs.get('oficina') || getOficinaId() || (oficinas[0] && oficinas[0].ID);
+  $('dia').value = qs.get('dia') || hojeISO();
+  await carregar();
+}
+async function carregar() {
+  oficina = oficinas.find(o => o.ID === parseInt($('selOficina').value)); if (!oficina) return;
+  abreMin = hm(oficina.HORA_ABRE); fechaMin = hm(oficina.HORA_FECHA);
+  const dia = $('dia').value;
+  try {
+    const [disp, evs] = await Promise.all([API.getDisponibilidade(oficina.ID, dia), API.getAgenda({ oficina_id: oficina.ID, de: dia + 'T00:00:00', ate: dia + 'T23:59:59' })]);
+    funcs = disp.funcionarios; eqs = disp.equipamentos; eventos = evs;
+    $('funcionario_id').innerHTML = '<option value="">—</option>' + funcs.map(f => `<option value="${f.ID}">${esc(f.NOME)}</option>`).join('');
+    $('equipamento_id').innerHTML = '<option value="">—</option>' + eqs.map(e => `<option value="${e.ID}">${esc(e.NOME)}</option>`).join('');
+    desenhar();
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+function desenhar() {
+  // expande a janela se houver evento fora do horário
+  let ini = abreMin, fim = fechaMin;
+  eventos.forEach(e => { ini = Math.min(ini, Math.floor(minsDe(new Date(e.INICIO)) / SLOT) * SLOT); fim = Math.max(fim, Math.ceil(minsDe(new Date(e.FIM)) / SLOT) * SLOT); });
+  const slots = Math.max(1, (fim - ini) / SLOT);
+  const cols = [{ tipo: 'G', id: null, nome: 'Sem recurso', sub: 'geral', cor: '#6c757d' },
+    ...funcs.map(f => ({ tipo: 'F', id: f.ID, nome: f.NOME, sub: 'mecânico', cor: f.COR_AGENDA })),
+    ...eqs.map(e => ({ tipo: 'E', id: e.ID, nome: e.NOME, sub: e.TIPO.toLowerCase(), cor: e.COR_AGENDA }))];
+  const g = $('grid'); g.style.gridTemplateColumns = `56px repeat(${cols.length}, minmax(150px, 1fr))`;
+  let html = `<div class="ag-head ag-horas"></div>` + cols.map(c => `<div class="ag-head"><div style="border-bottom:3px solid ${esc(c.cor)};display:inline-block;padding:0 .4rem">${esc(c.nome)}</div><div class="sub">${esc(c.sub)}</div></div>`).join('');
+  html += `<div class="ag-horas">` + Array.from({ length: slots }, (_, i) => { const m = ini + i * SLOT; return `<div class="ag-hora">${m % 60 === 0 ? String(m / 60).padStart(2, '0') + ':00' : ''}</div>`; }).join('') + `</div>`;
+  const agora = new Date(), ehHoje = $('dia').value === hojeISO();
+  cols.forEach(c => {
+    const evs = eventos.filter(e => c.tipo === 'F' ? e.FUNCIONARIO_ID === c.id : c.tipo === 'E' ? e.EQUIPAMENTO_ID === c.id : (!e.FUNCIONARIO_ID && !e.EQUIPAMENTO_ID));
+    html += `<div class="ag-col" style="height:${slots * ROWH}px" data-tipo="${c.tipo}" data-id="${c.id || ''}" onclick="clicarColuna(event,this)">` +
+      (ehHoje && minsDe(agora) >= ini && minsDe(agora) <= fim ? `<div class="ag-agora" style="top:${(minsDe(agora) - ini) / SLOT * ROWH}px"></div>` : '') +
+      evs.map(e => {
+        const a = new Date(e.INICIO), b = new Date(e.FIM); const top = (minsDe(a) - ini) / SLOT * ROWH, h = Math.max(ROWH - 2, (b - a) / 60000 / SLOT * ROWH - 2);
+        const cor = c.tipo === 'F' ? (e.COR_FUNC || c.cor) : c.tipo === 'E' ? (e.COR_EQUIP || c.cor) : '#6c757d';
+        return `<div class="ag-ev ${['CANCELADO', 'FALTOU'].includes(e.STATUS) ? 'cancelado' : ''}" style="top:${top}px;height:${h}px;background:${esc(cor)}" onclick="event.stopPropagation();abrir(${e.ID})" title="${esc(e.TITULO)}">
+          <div class="t">${a.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} ${e.GUINCHO ? '🚨 ' : ''}${e.PLACA ? esc(formatarPlaca(e.PLACA)) : esc(e.TITULO)}</div>
+          <div>${esc(e.CLIENTE_NOME || '')}${e.MODELO ? ' · ' + esc(e.MODELO) : ''}</div><div class="small">${esc(e.STATUS)}</div></div>`;
+      }).join('') + `</div>`;
+  });
+  g.innerHTML = html; g.dataset.ini = ini;
+}
+function clicarColuna(ev, col) {
+  const y = ev.offsetY, ini = parseInt($('grid').dataset.ini); const m = ini + Math.floor(y / ROWH) * SLOT;
+  const d = new Date($('dia').value + 'T00:00:00'); d.setMinutes(m);
+  abrir(null, { inicio: d, tipo: col.dataset.tipo, id: col.dataset.id });
+}
+// ---------- modal ----------
+async function abrir(id, pre) {
+  editId = id; const e = id ? eventos.find(x => x.ID === id) : null;
+  $('mt').textContent = e ? 'Compromisso' : 'Agendar'; $('acoesEdit').classList.toggle('d-none', !e); $('acoesEdit').classList.toggle('d-flex', !!e);
+  $('cli_busca').value = e ? (e.CLIENTE_NOME || '') : ''; $('cliente_id').value = e ? (e.CLIENTE_ID || '') : '';
+  $('veiculo_id').innerHTML = '<option value="">—</option>';
+  if (e && e.CLIENTE_ID) await carregarVeiculos(e.CLIENTE_ID, e.VEICULO_ID);
+  $('tipo').value = e ? e.TIPO : 'SERVICO'; $('status').value = e ? e.STATUS : 'AGENDADO';
+  const ini = e ? new Date(e.INICIO) : (pre && pre.inicio) || new Date(); $('inicio').value = isoLocal(ini);
+  $('duracao').value = e ? Math.round((new Date(e.FIM) - ini) / 60000) : 60;
+  $('funcionario_id').value = e ? (e.FUNCIONARIO_ID || '') : (pre && pre.tipo === 'F' ? pre.id : '');
+  $('equipamento_id').value = e ? (e.EQUIPAMENTO_ID || '') : (pre && pre.tipo === 'E' ? pre.id : '');
+  $('titulo').value = e ? e.TITULO : ''; $('guincho').checked = e ? !!e.GUINCHO : false; $('descricao').value = e ? (e.DESCRICAO || '') : '';
+  if (e) $('btnOrc').href = `/pages/pedidos.html?novo=1&agenda=${e.ID}&cliente=${e.CLIENTE_ID || ''}&veiculo=${e.VEICULO_ID || ''}`;
+  modal.show(); if (!e) setTimeout(() => $('cli_busca').focus(), 300);
+}
+async function carregarVeiculos(clienteId, sel) {
+  const c = await API.getCliente(clienteId);
+  $('veiculo_id').innerHTML = '<option value="">—</option>' + (c.veiculos || []).filter(v => v.ATIVO).map(v => `<option value="${v.ID}" data-txt="${esc(formatarPlaca(v.PLACA) + ' ' + v.MARCA + ' ' + v.MODELO)}">${esc(formatarPlaca(v.PLACA))} — ${esc(v.MARCA)} ${esc(v.MODELO)}</option>`).join('');
+  if (sel) $('veiculo_id').value = sel; else if ((c.veiculos || []).length === 1) $('veiculo_id').selectedIndex = 1;
+}
+$('cli_busca').oninput = debounce(async () => {
+  const q = $('cli_busca').value.trim(); const box = $('cli_sug'); $('cliente_id').value = '';
+  if (q.length < 2) { box.style.display = 'none'; return; }
+  const rs = await API.getClientes({ q, limite: 10 });
+  box.innerHTML = rs.map(c => `<button type="button" class="list-group-item list-group-item-action py-1 small" data-id="${c.ID}" data-nome="${esc(c.NOME)}">${esc(c.NOME)} <span class="text-muted">${esc(formatarFone(c.WHATSAPP || c.TELEFONE))}</span></button>`).join('')
+    + `<button type="button" class="list-group-item list-group-item-action py-1 small text-primary" data-novo="1"><i class="bi bi-person-plus me-1"></i>Cadastrar novo cliente</button>`;
+  box.style.display = '';
+  box.querySelectorAll('button').forEach(b => b.onclick = async () => {
+    box.style.display = 'none';
+    if (b.dataset.novo) { window.open('/pages/clientes.html', '_blank'); return; }
+    $('cliente_id').value = b.dataset.id; $('cli_busca').value = b.dataset.nome; await carregarVeiculos(b.dataset.id);
+  });
+});
+$('f').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const ini = new Date($('inicio').value), fim = new Date(ini.getTime() + (parseInt($('duracao').value) || 60) * 60000);
+  const vOpt = $('veiculo_id').selectedOptions[0];
+  const titulo = $('titulo').value.trim() || (vOpt && vOpt.dataset.txt ? vOpt.dataset.txt + ' — ' + $('tipo').value : $('cli_busca').value || $('tipo').value);
+  const d = { oficina_id: oficina.ID, inicio: isoLocal(ini) + ':00', fim: isoLocal(fim) + ':00', tipo: $('tipo').value, status: $('status').value,
+    cliente_id: $('cliente_id').value ? parseInt($('cliente_id').value) : null, veiculo_id: $('veiculo_id').value ? parseInt($('veiculo_id').value) : null,
+    funcionario_id: $('funcionario_id').value ? parseInt($('funcionario_id').value) : null, equipamento_id: $('equipamento_id').value ? parseInt($('equipamento_id').value) : null,
+    titulo, descricao: $('descricao').value || null, guincho: $('guincho').checked };
+  try { if (editId) await API.editarAgenda(editId, d); else await API.criarAgenda(d); mostrarAlerta('Agendado'); modal.hide(); $('dia').value = isoLocal(ini).slice(0, 10); carregar(); }
+  catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+async function mudarStatus(s) { try { await API.statusAgenda(editId, s); mostrarAlerta('Status: ' + s); modal.hide(); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); } }
+const mudaDia = (n) => { const d = new Date($('dia').value + 'T12:00:00'); d.setDate(d.getDate() + n); $('dia').value = isoLocal(d).slice(0, 10); carregar(); };
+$('btnAnt').onclick = () => mudaDia(-1); $('btnProx').onclick = () => mudaDia(1); $('btnHoje').onclick = () => { $('dia').value = hojeISO(); carregar(); };
+$('dia').onchange = carregar; $('selOficina').onchange = carregar; $('btnNovo').onclick = () => abrir(null);
+init();
+</script>
 </body>
 </html>

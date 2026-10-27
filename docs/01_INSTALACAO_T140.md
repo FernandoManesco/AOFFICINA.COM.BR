@@ -106,18 +106,18 @@ Agendar diário até concluir (e o backup):
 ```bash
 # [ SERVIDOR ]
 chmod +x /home/deploy/aofficina/scripts/backup_mysql.sh
-(crontab -l 2>/dev/null; echo "20 4 * * * cd /home/deploy/aofficina/api && .venv/bin/python ../scripts/importar_fipe.py --tipo carros --commit >> /home/deploy/aofficina/logs/fipe.log 2>&1"; echo "15 3 * * * /home/deploy/aofficina/scripts/backup_mysql.sh >> /home/deploy/aofficina/logs/backup.log 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "20 4 * * * cd /home/deploy/aofficina/api && .venv/bin/python -u ../scripts/importar_fipe.py --tipo carros --commit --max-req 950 >> /home/deploy/aofficina/logs/fipe.log 2>&1"; echo "15 3 * * * /home/deploy/aofficina/scripts/backup_mysql.sh >> /home/deploy/aofficina/logs/backup.log 2>&1") | crontab -
 crontab -l
 ```
 
-## 10. Git (repositório IA-PROCESS-AUTOMATION/aofficina — criar vazio e privado no GitHub antes)
+## 10. Git (repositório FernandoManesco/AOFFICINA.COM.BR — criar vazio e privado no GitHub antes)
 ```bash
 # [ SERVIDOR ]
 cd /home/deploy/aofficina
 git init -b main
 git add -A
 git commit -m "aOfficina v0.1: API, banco MySQL, frontend base, deploy"
-git remote add origin git@github.com:IA-PROCESS-AUTOMATION/aofficina.git
+git remote add origin git@github.com:FernandoManesco/AOFFICINA.COM.BR.git
 git push -u origin main
 ```
 

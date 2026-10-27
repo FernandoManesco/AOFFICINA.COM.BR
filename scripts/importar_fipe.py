@@ -38,14 +38,26 @@ class Cliente:
         if self.feitas >= self.max_req:
             raise RuntimeError(f"Limite de {self.max_req} requisições desta execução atingido — rode de novo amanhã/depois")
         self.feitas += 1
-        for tent in range(3):
-            r = self.s.get(f"{BASE}/{caminho}", timeout=30)
+        for tent in range(6):
+            try:
+                r = self.s.get(f"{BASE}/{caminho}", timeout=30)
+            except requests.exceptions.RequestException as e:
+                # conexão derrubada / timeout: espera crescente e abre sessão nova
+                espera = 10 * (tent + 1)
+                print(f"    rede: {type(e).__name__} — aguardando {espera}s e tentando de novo")
+                time.sleep(espera)
+                self.s = requests.Session()
+                if config.FIPE_TOKEN:
+                    self.s.headers["X-Subscription-Token"] = config.FIPE_TOKEN
+                continue
             if r.status_code == 429:
                 time.sleep(30 * (tent + 1)); continue
+            if r.status_code >= 500:
+                time.sleep(10 * (tent + 1)); continue
             r.raise_for_status()
             time.sleep(self.pausa)
             return r.json()
-        raise RuntimeError("API FIPE devolveu 429 repetidamente (limite diário)")
+        raise RuntimeError("API FIPE não respondeu após 6 tentativas (limite diário ou instabilidade) — rode de novo mais tarde")
 
 
 def main():

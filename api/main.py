@@ -21,7 +21,7 @@ log = logging.getLogger("aofficina")
 dev = config.AMBIENTE == "dev"
 app = FastAPI(
     title="aOfficina API",
-    version="0.1.0",
+    version="0.2.0",
     docs_url="/docs" if dev else None,
     redoc_url=None,
     openapi_url="/openapi.json" if dev else None,

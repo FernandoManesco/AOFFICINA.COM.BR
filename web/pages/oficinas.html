@@ -2,18 +2,149 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — oficinas</title>
+<title>aOfficina — Oficinas e Recursos</title>
 <link rel="icon" href="/img/favicon.png">
 <link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="/css/app.css?v=1" rel="stylesheet">
+<link href="/css/app.css?v=2" rel="stylesheet">
 </head>
 <body data-pagina="oficinas">
 <main id="conteudo">
-  <div class="card card-ao"><div class="card-body text-center text-muted py-5"><i class="bi bi-cone-striped fs-1 d-block mb-2 text-warning"></i>Tela <b>oficinas</b> — em construção (próxima versão)</div></div>
+  <h4 class="mb-3"><i class="bi bi-shop me-2 text-secondary"></i>Oficinas e Recursos</h4>
+  <div class="row g-3">
+    <div class="col-lg-4">
+      <div class="card card-ao"><div class="card-header d-flex justify-content-between align-items-center">Oficinas <button class="btn btn-sm btn-cobre" id="btnNovaOf" style="display:none"><i class="bi bi-plus-lg"></i></button></div>
+        <div class="table-responsive"><table class="table table-ao table-sm mb-0"><thead><tr><th>Nome</th><th>Cidade</th><th>Horário</th></tr></thead><tbody id="tbOf"></tbody></table></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card card-ao"><div class="card-header d-flex justify-content-between align-items-center">Funcionários <button class="btn btn-sm btn-cobre" id="btnNovoFunc"><i class="bi bi-plus-lg"></i></button></div>
+        <div class="table-responsive"><table class="table table-ao table-sm mb-0"><thead><tr><th></th><th>Nome</th><th>Função</th><th>Oficina</th></tr></thead><tbody id="tbFunc"></tbody></table></div></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card card-ao"><div class="card-header d-flex justify-content-between align-items-center">Equipamentos (boxes, elevadores) <button class="btn btn-sm btn-cobre" id="btnNovoEq"><i class="bi bi-plus-lg"></i></button></div>
+        <div class="table-responsive"><table class="table table-ao table-sm mb-0"><thead><tr><th></th><th>Nome</th><th>Tipo</th><th>Oficina</th></tr></thead><tbody id="tbEq"></tbody></table></div></div>
+    </div>
+  </div>
 </main>
+
+<!-- Oficina -->
+<div class="modal fade" id="mOf" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><form id="fOf">
+  <div class="modal-header"><h5 class="modal-title" id="mtOf">Oficina</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-md-6"><label class="form-label">Nome *</label><input class="form-control" id="o_nome" required maxlength="80"></div>
+    <div class="col-md-6"><label class="form-label">CNPJ (filial)</label><input class="form-control" id="o_cnpj" maxlength="18"></div>
+    <div class="col-md-4"><label class="form-label">Telefone</label><input class="form-control" id="o_tel"></div>
+    <div class="col-md-4"><label class="form-label">WhatsApp</label><input class="form-control" id="o_whats"></div>
+    <div class="col-md-4"><label class="form-label">CEP</label><input class="form-control" id="o_cep" maxlength="9"></div>
+    <div class="col-md-6"><label class="form-label">Logradouro</label><input class="form-control" id="o_log"></div>
+    <div class="col-md-2"><label class="form-label">Nº</label><input class="form-control" id="o_num"></div>
+    <div class="col-md-4"><label class="form-label">Bairro</label><input class="form-control" id="o_bairro"></div>
+    <div class="col-md-5"><label class="form-label">Cidade</label><input class="form-control" id="o_cidade"></div>
+    <div class="col-md-1"><label class="form-label">UF</label><input class="form-control text-uppercase" id="o_uf" maxlength="2"></div>
+    <div class="col-md-2"><label class="form-label">Abre</label><input type="time" class="form-control" id="o_abre" value="08:00"></div>
+    <div class="col-md-2"><label class="form-label">Fecha</label><input type="time" class="form-control" id="o_fecha" value="18:00"></div>
+    <div class="col-md-2"><label class="form-label">Ativa</label><div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="o_ativo" checked></div></div>
+    <div class="col-12"><label class="form-label">Dias de funcionamento</label><div class="d-flex gap-3 flex-wrap" id="o_dias"></div></div>
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+</form></div></div></div>
+
+<!-- Funcionário -->
+<div class="modal fade" id="mFunc" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="fFunc">
+  <div class="modal-header"><h5 class="modal-title" id="mtFunc">Funcionário</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-12"><label class="form-label">Nome *</label><input class="form-control" id="f_nome" required maxlength="100"></div>
+    <div class="col-md-6"><label class="form-label">Função</label><select class="form-select" id="f_funcao"><option>MECANICO</option><option>ATENDENTE</option><option>GERENTE</option><option>FINANCEIRO</option><option>OUTRO</option></select></div>
+    <div class="col-md-6"><label class="form-label">Oficina</label><select class="form-select" id="f_oficina"><option value="">Todas</option></select></div>
+    <div class="col-md-6"><label class="form-label">CPF</label><input class="form-control" id="f_cpf" maxlength="14"></div>
+    <div class="col-md-6"><label class="form-label">Telefone</label><input class="form-control" id="f_tel"></div>
+    <div class="col-md-6"><label class="form-label">Cor na agenda</label><input type="color" class="form-control form-control-color" id="f_cor" value="#0F4C5C"></div>
+    <div class="col-md-6"><label class="form-label">Ativo</label><div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="f_ativo" checked></div></div>
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+</form></div></div></div>
+
+<!-- Equipamento -->
+<div class="modal fade" id="mEq" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form id="fEq">
+  <div class="modal-header"><h5 class="modal-title" id="mtEq">Equipamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-12"><label class="form-label">Nome *</label><input class="form-control" id="e_nome" required maxlength="60" placeholder="Elevador 1, Box 2, Scanner..."></div>
+    <div class="col-md-6"><label class="form-label">Tipo</label><select class="form-select" id="e_tipo"><option>BOX</option><option>ELEVADOR</option><option>SCANNER</option><option>ALINHADORA</option><option>OUTRO</option></select></div>
+    <div class="col-md-6"><label class="form-label">Oficina *</label><select class="form-select" id="e_oficina" required></select></div>
+    <div class="col-md-6"><label class="form-label">Cor na agenda</label><input type="color" class="form-control form-control-color" id="e_cor" value="#B87333"></div>
+    <div class="col-md-6"><label class="form-label">Ativo</label><div class="form-check mt-2"><input class="form-check-input" type="checkbox" id="e_ativo" checked></div></div>
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+</form></div></div></div>
+
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
-<script>montarLayout();</script>
+<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script>
+montarLayout(); exigirNivel(1);
+const $ = (id) => document.getElementById(id);
+const mOf = new bootstrap.Modal('#mOf'), mFunc = new bootstrap.Modal('#mFunc'), mEq = new bootstrap.Modal('#mEq');
+let oficinas = [], funcs = [], eqs = [], edOf = null, edFunc = null, edEq = null;
+const DIAS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+$('o_dias').innerHTML = DIAS.map((d, i) => `<div class="form-check"><input class="form-check-input dia" type="checkbox" value="${i}" id="dia${i}"><label class="form-check-label" for="dia${i}">${d}</label></div>`).join('');
+if (getNivel() === 0) $('btnNovaOf').style.display = '';
+
+async function carregar() {
+  try {
+    [oficinas, funcs, eqs] = await Promise.all([API.getOficinas(), API.getFuncionarios(), API.getEquipamentos()]);
+    $('tbOf').innerHTML = oficinas.map(o => `<tr onclick="abrirOf(${o.ID})"><td>${esc(o.NOME)}${o.ATIVO ? '' : ' <span class="badge text-bg-secondary">inativa</span>'}</td><td>${esc(o.CIDADE || '')}</td><td class="small">${esc(String(o.HORA_ABRE).slice(0, 5))}–${esc(String(o.HORA_FECHA).slice(0, 5))}</td></tr>`).join('');
+    $('tbFunc').innerHTML = funcs.map(f => `<tr onclick="abrirFunc(${f.ID})"><td><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${esc(f.COR_AGENDA)}"></span></td><td>${esc(f.NOME)}${f.ATIVO ? '' : ' <span class="badge text-bg-secondary">inativo</span>'}</td><td class="small">${esc(f.FUNCAO)}</td><td class="small">${esc(f.OFICINA_NOME || 'Todas')}</td></tr>`).join('') || '<tr><td colspan="4" class="text-muted text-center py-3">Nenhum funcionário</td></tr>';
+    $('tbEq').innerHTML = eqs.map(e => `<tr onclick="abrirEq(${e.ID})"><td><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:${esc(e.COR_AGENDA)}"></span></td><td>${esc(e.NOME)}${e.ATIVO ? '' : ' <span class="badge text-bg-secondary">inativo</span>'}</td><td class="small">${esc(e.TIPO)}</td><td class="small">${esc(e.OFICINA_NOME)}</td></tr>`).join('') || '<tr><td colspan="4" class="text-muted text-center py-3">Nenhum equipamento</td></tr>';
+    const opts = oficinas.map(o => `<option value="${o.ID}">${esc(o.NOME)}</option>`).join('');
+    $('f_oficina').innerHTML = '<option value="">Todas</option>' + opts; $('e_oficina').innerHTML = opts;
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+// ---- oficina ----
+function abrirOf(id) {
+  if (getNivel() !== 0) return; const o = id ? oficinas.find(x => x.ID === id) : null; edOf = id || null;
+  $('mtOf').textContent = o ? 'Editar oficina' : 'Nova oficina';
+  $('o_nome').value = o ? o.NOME : ''; $('o_cnpj').value = o ? (o.CNPJ || '') : ''; $('o_tel').value = o ? (o.TELEFONE || '') : ''; $('o_whats').value = o ? (o.WHATSAPP || '') : '';
+  $('o_cep').value = o ? (o.CEP || '') : ''; $('o_log').value = o ? (o.LOGRADOURO || '') : ''; $('o_num').value = o ? (o.NUMERO || '') : ''; $('o_bairro').value = o ? (o.BAIRRO || '') : '';
+  $('o_cidade').value = o ? (o.CIDADE || '') : ''; $('o_uf').value = o ? (o.UF || '') : ''; $('o_abre').value = o ? String(o.HORA_ABRE).slice(0, 5) : '08:00'; $('o_fecha').value = o ? String(o.HORA_FECHA).slice(0, 5) : '18:00';
+  $('o_ativo').checked = o ? !!o.ATIVO : true; const dias = (o ? o.DIAS_SEMANA : '1,2,3,4,5,6').split(',');
+  document.querySelectorAll('.dia').forEach(c => c.checked = dias.includes(c.value));
+  mOf.show();
+}
+$('btnNovaOf').onclick = () => abrirOf(null);
+$('fOf').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const d = { nome: $('o_nome').value, cnpj: $('o_cnpj').value || null, telefone: $('o_tel').value || null, whatsapp: $('o_whats').value || null, cep: $('o_cep').value || null, logradouro: $('o_log').value || null,
+    numero: $('o_num').value || null, bairro: $('o_bairro').value || null, cidade: $('o_cidade').value || null, uf: $('o_uf').value || null, hora_abre: $('o_abre').value, hora_fecha: $('o_fecha').value,
+    dias_semana: [...document.querySelectorAll('.dia:checked')].map(c => c.value).join(','), ativo: $('o_ativo').checked };
+  try { if (edOf) await API.editarOficina(edOf, d); else await API.criarOficina(d); mostrarAlerta('Salvo'); mOf.hide(); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+// ---- funcionário ----
+function abrirFunc(id) {
+  const f = id ? funcs.find(x => x.ID === id) : null; edFunc = id || null;
+  $('mtFunc').textContent = f ? 'Editar funcionário' : 'Novo funcionário';
+  $('f_nome').value = f ? f.NOME : ''; $('f_funcao').value = f ? f.FUNCAO : 'MECANICO'; $('f_oficina').value = f && f.OFICINA_ID ? f.OFICINA_ID : '';
+  $('f_cpf').value = f ? (f.CPF || '') : ''; $('f_tel').value = f ? (f.TELEFONE || '') : ''; $('f_cor').value = f ? f.COR_AGENDA : '#0F4C5C'; $('f_ativo').checked = f ? !!f.ATIVO : true;
+  mFunc.show();
+}
+$('btnNovoFunc').onclick = () => abrirFunc(null);
+$('fFunc').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const d = { nome: $('f_nome').value, funcao: $('f_funcao').value, oficina_id: $('f_oficina').value ? parseInt($('f_oficina').value) : null, cpf: $('f_cpf').value || null, telefone: $('f_tel').value || null, cor_agenda: $('f_cor').value, ativo: $('f_ativo').checked };
+  try { if (edFunc) await API.editarFuncionario(edFunc, d); else await API.criarFuncionario(d); mostrarAlerta('Salvo'); mFunc.hide(); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+// ---- equipamento ----
+function abrirEq(id) {
+  const e = id ? eqs.find(x => x.ID === id) : null; edEq = id || null;
+  $('mtEq').textContent = e ? 'Editar equipamento' : 'Novo equipamento';
+  $('e_nome').value = e ? e.NOME : ''; $('e_tipo').value = e ? e.TIPO : 'BOX'; $('e_oficina').value = e ? e.OFICINA_ID : (oficinas[0] ? oficinas[0].ID : ''); $('e_cor').value = e ? e.COR_AGENDA : '#B87333'; $('e_ativo').checked = e ? !!e.ATIVO : true;
+  mEq.show();
+}
+$('btnNovoEq').onclick = () => abrirEq(null);
+$('fEq').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const d = { nome: $('e_nome').value, tipo: $('e_tipo').value, oficina_id: parseInt($('e_oficina').value), cor_agenda: $('e_cor').value, ativo: $('e_ativo').checked };
+  try { if (edEq) await API.editarEquipamento(edEq, d); else await API.criarEquipamento(d); mostrarAlerta('Salvo'); mEq.hide(); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+carregar();
+</script>
 </body>
 </html>

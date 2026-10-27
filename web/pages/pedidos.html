@@ -2,18 +2,112 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — pedidos</title>
+<title>aOfficina — Orçamentos e Pedidos</title>
 <link rel="icon" href="/img/favicon.png">
 <link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="/css/app.css?v=1" rel="stylesheet">
+<link href="/css/app.css?v=2" rel="stylesheet">
 </head>
 <body data-pagina="pedidos">
 <main id="conteudo">
-  <div class="card card-ao"><div class="card-body text-center text-muted py-5"><i class="bi bi-cone-striped fs-1 d-block mb-2 text-warning"></i>Tela <b>pedidos</b> — em construção (próxima versão)</div></div>
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-clipboard2-check me-2 text-secondary"></i>Orçamentos e Pedidos</h4>
+    <button class="btn btn-cobre" id="btnNovo"><i class="bi bi-plus-lg me-1"></i>Novo orçamento</button>
+  </div>
+  <div class="card card-ao">
+    <div class="card-body pb-2">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4"><div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" id="q" placeholder="Cliente, placa ou número" autofocus></div></div>
+        <div class="col-md-2"><select class="form-select" id="tipo"><option value="">Orçamentos e pedidos</option><option value="ORCAMENTO">Só orçamentos</option><option value="PEDIDO">Só pedidos</option></select></div>
+        <div class="col-md-2"><select class="form-select" id="status"><option value="">Todos os status</option><option>ABERTO</option><option>ENVIADO</option><option>APROVADO</option><option>EM_EXECUCAO</option><option>AGUARDANDO_PECA</option><option>CONCLUIDO</option><option>ENTREGUE</option><option>FATURADO</option><option>RECUSADO</option><option>CANCELADO</option></select></div>
+        <div class="col-md-2"><input type="date" class="form-control" id="de" title="Aberto de"></div>
+        <div class="col-md-2"><input type="date" class="form-control" id="ate" title="Aberto até"></div>
+      </div>
+    </div>
+    <div class="table-responsive"><table class="table table-ao mb-0">
+      <thead><tr><th>Nº</th><th>Tipo</th><th>Aberto em</th><th>Veículo</th><th>Cliente</th><th>Mecânico</th><th>Status</th><th>Previsão</th><th class="text-end">Total</th></tr></thead>
+      <tbody id="tb"></tbody></table></div>
+  </div>
 </main>
+
+<!-- Novo orçamento / pedido -->
+<div class="modal fade" id="m" tabindex="-1" data-bs-backdrop="static"><div class="modal-dialog modal-lg"><div class="modal-content"><form id="f">
+  <div class="modal-header"><h5 class="modal-title">Novo orçamento</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-md-4"><label class="form-label">Placa (busca direta)</label><div class="input-group"><input class="form-control text-uppercase" id="placa" maxlength="8" placeholder="ABC1D23"><button type="button" class="btn btn-outline-secondary" id="btnPlaca"><i class="bi bi-search"></i></button></div></div>
+    <div class="col-md-8 position-relative"><label class="form-label">ou Cliente (nome / CPF / telefone) *</label><input class="form-control" id="cli_busca" autocomplete="off"><input type="hidden" id="cliente_id">
+      <div class="list-group position-absolute shadow w-100" id="cli_sug" style="z-index:1060;max-height:220px;overflow:auto;display:none"></div></div>
+    <div class="col-md-8"><label class="form-label">Veículo *</label><select class="form-select" id="veiculo_id" required><option value="">—</option></select></div>
+    <div class="col-md-4"><label class="form-label">Km de entrada</label><input type="number" class="form-control" id="km" min="0"></div>
+    <div class="col-md-4"><label class="form-label">Oficina</label><select class="form-select" id="oficina_id"></select></div>
+    <div class="col-md-4"><label class="form-label">Mecânico responsável</label><select class="form-select" id="funcionario_id"><option value="">—</option></select></div>
+    <div class="col-md-4"><label class="form-label">Abrir como</label><select class="form-select" id="tipoNovo"><option value="ORCAMENTO">Orçamento (cliente aprova depois)</option><option value="PEDIDO">Pedido já aprovado</option></select></div>
+    <div class="col-12"><label class="form-label">Queixa do cliente / motivo da visita</label><textarea class="form-control" id="queixa" rows="2"></textarea></div>
+    <div class="col-md-4"><div class="form-check"><input class="form-check-input" type="checkbox" id="guincho"><label class="form-check-label" for="guincho">Chegou de guincho</label></div></div>
+    <input type="hidden" id="agenda_id">
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre"><i class="bi bi-arrow-right-circle me-1"></i>Abrir e lançar itens</button></div>
+</form></div></div></div>
+
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
-<script>montarLayout();</script>
+<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script>
+montarLayout();
+const $ = (id) => document.getElementById(id); const modal = new bootstrap.Modal('#m'); let oficinas = [];
+async function listar() {
+  try {
+    const rows = await API.getPedidos({ q: $('q').value.trim(), tipo: $('tipo').value, status: $('status').value, de: $('de').value, ate: $('ate').value, limite: 300 });
+    $('tb').innerHTML = rows.length ? rows.map(p => `<tr onclick="location.href='/pages/pedido.html?id=${p.ID}'">
+      <td class="mono">${p.TIPO === 'PEDIDO' ? '<b>P ' + p.NUMERO_PEDIDO + '</b>' : 'O ' + p.NUMERO_ORCAMENTO}</td><td>${p.TIPO === 'PEDIDO' ? 'Pedido' : 'Orçamento'}</td>
+      <td class="small">${esc(formatarDataHora(p.ABERTO_EM))}</td><td><span class="placa">${esc(formatarPlaca(p.PLACA))}</span> ${esc(p.MARCA)} ${esc(p.MODELO)}${p.GUINCHO ? ' 🚨' : ''}</td>
+      <td>${esc(p.CLIENTE_NOME)}</td><td class="small">${esc(p.FUNCIONARIO_NOME || '')}</td><td>${badgeStatus(p.STATUS)}</td><td class="small">${esc(formatarDataHora(p.PREVISAO_ENTREGA))}</td>
+      <td class="text-end fw-bold">${formatarMoeda(p.TOTAL_CENT)}</td></tr>`).join('')
+      : '<tr><td colspan="9" class="text-center text-muted py-4">Nenhum registro</td></tr>';
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+['q'].forEach(i => $(i).oninput = debounce(listar)); ['tipo', 'status', 'de', 'ate'].forEach(i => $(i).onchange = listar);
+
+// ---------- novo ----------
+async function carregarVeiculos(clienteId, sel) {
+  const c = await API.getCliente(clienteId); $('cliente_id').value = c.ID; $('cli_busca').value = c.NOME;
+  const vs = (c.veiculos || []).filter(v => v.ATIVO);
+  $('veiculo_id').innerHTML = '<option value="">—</option>' + vs.map(v => `<option value="${v.ID}" data-km="${v.KM_ATUAL || ''}">${esc(formatarPlaca(v.PLACA))} — ${esc(v.MARCA)} ${esc(v.MODELO)} ${v.ANO_MODELO || ''}</option>`).join('');
+  if (sel) $('veiculo_id').value = sel; else if (vs.length === 1) $('veiculo_id').selectedIndex = 1;
+  $('veiculo_id').onchange();
+}
+$('veiculo_id').onchange = () => { const o = $('veiculo_id').selectedOptions[0]; if (o && o.dataset.km && !$('km').value) $('km').placeholder = 'último: ' + o.dataset.km; };
+$('btnPlaca').onclick = async () => {
+  try { const v = await API.getVeiculoPorPlaca($('placa').value); await carregarVeiculos(v.CLIENTE_ID, v.ID); }
+  catch (e) { mostrarAlerta(e.message + ' — cadastre o cliente e o veículo em Clientes', 'warning'); }
+};
+$('placa').addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); $('btnPlaca').click(); } });
+$('cli_busca').oninput = debounce(async () => {
+  const q = $('cli_busca').value.trim(); const box = $('cli_sug'); $('cliente_id').value = '';
+  if (q.length < 2) { box.style.display = 'none'; return; }
+  const rs = await API.getClientes({ q, limite: 10 });
+  box.innerHTML = rs.map(c => `<button type="button" class="list-group-item list-group-item-action py-1 small" data-id="${c.ID}">${esc(c.NOME)} <span class="text-muted">${esc(formatarDoc(c.CPF_CNPJ))} · ${c.QTD_VEICULOS} veíc.</span></button>`).join('') || '<div class="list-group-item small text-muted">Nenhum cliente — cadastre em Clientes</div>';
+  box.style.display = '';
+  box.querySelectorAll('button').forEach(b => b.onclick = async () => { box.style.display = 'none'; await carregarVeiculos(b.dataset.id); });
+});
+async function abrirNovo(qs) {
+  if (!oficinas.length) { oficinas = await API.getOficinas(); $('oficina_id').innerHTML = oficinas.map(o => `<option value="${o.ID}">${esc(o.NOME)}</option>`).join(''); $('oficina_id').value = getOficinaId() || oficinas[0].ID;
+    const fs = await API.getFuncionarios(); $('funcionario_id').innerHTML = '<option value="">—</option>' + fs.filter(f => f.ATIVO && f.FUNCAO === 'MECANICO').map(f => `<option value="${f.ID}">${esc(f.NOME)}</option>`).join(''); }
+  $('placa').value = ''; $('cli_busca').value = ''; $('cliente_id').value = ''; $('veiculo_id').innerHTML = '<option value="">—</option>'; $('km').value = ''; $('queixa').value = ''; $('guincho').checked = false; $('agenda_id').value = qs.get('agenda') || '';
+  if (qs.get('cliente')) await carregarVeiculos(qs.get('cliente'), qs.get('veiculo') || null);
+  else if (qs.get('veiculo')) { const lista = await API.getVeiculos({ limite: 500 }); const v = lista.find(x => x.ID === parseInt(qs.get('veiculo'))); if (v) await carregarVeiculos(v.CLIENTE_ID, v.ID); }
+  modal.show(); setTimeout(() => $('placa').focus(), 300);
+}
+$('btnNovo').onclick = () => abrirNovo(new URLSearchParams());
+$('f').onsubmit = async (ev) => {
+  ev.preventDefault();
+  if (!$('cliente_id').value || !$('veiculo_id').value) return mostrarAlerta('Selecione cliente e veículo', 'warning');
+  const d = { oficina_id: parseInt($('oficina_id').value), cliente_id: parseInt($('cliente_id').value), veiculo_id: parseInt($('veiculo_id').value), tipo: $('tipoNovo').value,
+    agenda_id: $('agenda_id').value ? parseInt($('agenda_id').value) : null, funcionario_id: $('funcionario_id').value ? parseInt($('funcionario_id').value) : null,
+    km_entrada: $('km').value ? parseInt($('km').value) : null, guincho: $('guincho').checked, queixa: $('queixa').value || null };
+  try { const r = await API.criarPedido(d); location.href = '/pages/pedido.html?id=' + r.id; } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+listar();
+const qs0 = new URLSearchParams(location.search); if (qs0.get('novo')) abrirNovo(qs0);
+</script>
 </body>
 </html>

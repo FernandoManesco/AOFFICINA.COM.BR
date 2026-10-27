@@ -2,18 +2,82 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — servicos</title>
+<title>aOfficina — Mão de obra</title>
 <link rel="icon" href="/img/favicon.png">
 <link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="/css/app.css?v=1" rel="stylesheet">
+<link href="/css/app.css?v=2" rel="stylesheet">
 </head>
 <body data-pagina="servicos">
 <main id="conteudo">
-  <div class="card card-ao"><div class="card-body text-center text-muted py-5"><i class="bi bi-cone-striped fs-1 d-block mb-2 text-warning"></i>Tela <b>servicos</b> — em construção (próxima versão)</div></div>
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-tools me-2 text-secondary"></i>Mão de obra</h4>
+    <button class="btn btn-cobre" id="btnNovo"><i class="bi bi-plus-lg me-1"></i>Novo serviço</button>
+  </div>
+  <div class="card card-ao">
+    <div class="card-body pb-2 d-flex gap-3 flex-wrap align-items-center">
+      <div class="input-group" style="max-width:420px"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" id="busca" placeholder="Código, nome ou categoria" autofocus></div>
+      <div class="form-check form-switch small mb-0"><input class="form-check-input" type="checkbox" id="soAtivos" checked><label class="form-check-label" for="soAtivos">Só ativos</label></div>
+    </div>
+    <div class="table-responsive"><table class="table table-ao mb-0">
+      <thead><tr><th>Código</th><th>Serviço</th><th>Categoria</th><th class="text-end">Valor/hora</th><th class="text-end">Tempo previsto</th><th class="text-end">Valor fixo</th><th class="text-end">Preço previsto</th></tr></thead>
+      <tbody id="tb"></tbody></table></div>
+  </div>
 </main>
+
+<div class="modal fade" id="m" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><form id="f">
+  <div class="modal-header"><h5 class="modal-title" id="mt">Serviço</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-md-3"><label class="form-label">Código *</label><input class="form-control text-uppercase" id="codigo" required maxlength="20"></div>
+    <div class="col-md-6"><label class="form-label">Nome *</label><input class="form-control" id="nome" required maxlength="120"></div>
+    <div class="col-md-3"><label class="form-label">Categoria</label><input class="form-control" id="categoria" maxlength="40" list="cats"><datalist id="cats"><option>Motor<option>Freios<option>Suspensão<option>Elétrica<option>Injeção<option>Transmissão<option>Arrefecimento<option>Ar-condicionado<option>Revisão<option>Funilaria</datalist></div>
+    <div class="col-md-3"><label class="form-label">Valor/hora (R$) *</label><input type="number" step="0.01" min="0" class="form-control" id="valor_hora" required></div>
+    <div class="col-md-3"><label class="form-label">Tempo previsto (min) *</label><input type="number" min="1" class="form-control" id="tempo" required value="60"></div>
+    <div class="col-md-3"><label class="form-label">Valor fixo (R$)</label><input type="number" step="0.01" min="0" class="form-control" id="valor_fixo" placeholder="opcional"></div>
+    <div class="col-md-3"><label class="form-label">Preço previsto</label><div class="form-control-plaintext fw-bold" id="previsto">R$ 0,00</div></div>
+    <div class="col-12"><label class="form-label">Descrição / procedimento</label><textarea class="form-control" id="descricao" rows="3"></textarea></div>
+    <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" id="ativo" checked><label class="form-check-label" for="ativo">Ativo</label></div></div>
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+</form></div></div></div>
+
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
-<script>montarLayout();</script>
+<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script>
+montarLayout();
+const $ = (id) => document.getElementById(id); const modal = new bootstrap.Modal('#m'); let lista = [], editId = null;
+async function listar() {
+  try {
+    lista = await API.getServicos({ q: $('busca').value.trim(), ativos: $('soAtivos').checked, limite: 500 });
+    $('tb').innerHTML = lista.length ? lista.map(s => `<tr onclick="abrir(${s.ID})">
+      <td class="mono">${esc(s.CODIGO)}</td><td>${esc(s.NOME)}${s.ATIVO ? '' : ' <span class="badge text-bg-secondary">inativo</span>'}</td><td>${esc(s.CATEGORIA || '')}</td>
+      <td class="text-end">${formatarMoeda(s.VALOR_HORA_CENT)}</td><td class="text-end">${minutosParaTexto(s.TEMPO_PREVISTO_MIN)}</td>
+      <td class="text-end">${s.VALOR_FIXO_CENT != null ? formatarMoeda(s.VALOR_FIXO_CENT) : '—'}</td><td class="text-end fw-bold">${formatarMoeda(s.VALOR_PREVISTO_CENT)}</td></tr>`).join('')
+      : '<tr><td colspan="7" class="text-center text-muted py-4">Nenhum serviço cadastrado</td></tr>';
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+function calcPrevisto() {
+  const fixo = $('valor_fixo').value; const c = fixo !== '' ? reaisParaCent(fixo) : Math.round(reaisParaCent($('valor_hora').value) * (parseInt($('tempo').value) || 0) / 60);
+  $('previsto').textContent = formatarMoeda(c);
+}
+['valor_hora', 'tempo', 'valor_fixo'].forEach(i => $(i).oninput = calcPrevisto);
+function abrir(id) {
+  const s = id ? lista.find(x => x.ID === id) : null; editId = id || null;
+  $('mt').textContent = s ? 'Editar serviço' : 'Novo serviço';
+  $('codigo').value = s ? s.CODIGO : ''; $('nome').value = s ? s.NOME : ''; $('categoria').value = s ? (s.CATEGORIA || '') : '';
+  $('valor_hora').value = s ? centParaReais(s.VALOR_HORA_CENT) : ''; $('tempo').value = s ? s.TEMPO_PREVISTO_MIN : 60;
+  $('valor_fixo').value = s && s.VALOR_FIXO_CENT != null ? centParaReais(s.VALOR_FIXO_CENT) : ''; $('descricao').value = s ? (s.DESCRICAO || '') : ''; $('ativo').checked = s ? !!s.ATIVO : true;
+  calcPrevisto(); modal.show(); setTimeout(() => $(s ? 'nome' : 'codigo').focus(), 300);
+}
+$('btnNovo').onclick = () => abrir(null);
+$('f').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const d = { codigo: $('codigo').value, nome: $('nome').value, categoria: $('categoria').value || null, descricao: $('descricao').value || null,
+    valor_hora_cent: reaisParaCent($('valor_hora').value), tempo_previsto_min: parseInt($('tempo').value), valor_fixo_cent: $('valor_fixo').value !== '' ? reaisParaCent($('valor_fixo').value) : null, ativo: $('ativo').checked };
+  try { if (editId) await API.editarServico(editId, d); else await API.criarServico(d); mostrarAlerta('Salvo'); modal.hide(); listar(); }
+  catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+$('busca').oninput = debounce(listar); $('soAtivos').onchange = listar; listar();
+</script>
 </body>
 </html>

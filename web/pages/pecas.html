@@ -2,18 +2,85 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — pecas</title>
+<title>aOfficina — Peças</title>
 <link rel="icon" href="/img/favicon.png">
 <link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
 <link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
-<link href="/css/app.css?v=1" rel="stylesheet">
+<link href="/css/app.css?v=2" rel="stylesheet">
 </head>
 <body data-pagina="pecas">
 <main id="conteudo">
-  <div class="card card-ao"><div class="card-body text-center text-muted py-5"><i class="bi bi-cone-striped fs-1 d-block mb-2 text-warning"></i>Tela <b>pecas</b> — em construção (próxima versão)</div></div>
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-gear-wide-connected me-2 text-secondary"></i>Peças</h4>
+    <button class="btn btn-cobre" id="btnNovo"><i class="bi bi-plus-lg me-1"></i>Nova peça</button>
+  </div>
+  <div class="card card-ao">
+    <div class="card-body pb-2 d-flex gap-3 flex-wrap align-items-center">
+      <div class="input-group" style="max-width:460px"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" id="busca" placeholder="Código, part number, código de barras, nome ou aplicação" autofocus></div>
+      <div class="form-check form-switch small mb-0"><input class="form-check-input" type="checkbox" id="soAtivos" checked><label class="form-check-label" for="soAtivos">Só ativas</label></div>
+    </div>
+    <div class="table-responsive"><table class="table table-ao mb-0">
+      <thead><tr><th>Código</th><th>Peça</th><th>Fabricante / Part number</th><th>Aplicação</th><th>Un.</th><th class="text-end">Custo</th><th class="text-end">Venda</th><th class="text-end">Margem</th></tr></thead>
+      <tbody id="tb"></tbody></table></div>
+  </div>
 </main>
+
+<div class="modal fade" id="m" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><form id="f">
+  <div class="modal-header"><h5 class="modal-title" id="mt">Peça</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-md-3"><label class="form-label">Código interno *</label><input class="form-control text-uppercase" id="codigo" required maxlength="30"></div>
+    <div class="col-md-6"><label class="form-label">Nome *</label><input class="form-control" id="nome" required maxlength="120"></div>
+    <div class="col-md-3"><label class="form-label">Unidade</label><select class="form-select" id="unidade"><option>UN</option><option>PC</option><option>PAR</option><option>JG</option><option>KIT</option><option>L</option><option>ML</option><option>KG</option><option>M</option></select></div>
+    <div class="col-md-4"><label class="form-label">Fabricante</label><input class="form-control" id="fabricante" maxlength="60" placeholder="Bosch, Cofap, Fras-le..."></div>
+    <div class="col-md-4"><label class="form-label">Part number (cód. fabricante)</label><input class="form-control" id="codigo_fabricante" maxlength="40"></div>
+    <div class="col-md-4"><label class="form-label">Código de barras</label><input class="form-control" id="codigo_barras" maxlength="20" inputmode="numeric"></div>
+    <div class="col-12"><label class="form-label">Aplicação</label><input class="form-control" id="aplicacao" maxlength="255" placeholder="ex.: Gol G5/G6 1.0 e 1.6 2009–2016"></div>
+    <div class="col-md-3"><label class="form-label">Preço de custo (R$)</label><input type="number" step="0.01" min="0" class="form-control" id="custo"></div>
+    <div class="col-md-3"><label class="form-label">Preço de venda (R$) *</label><input type="number" step="0.01" min="0" class="form-control" id="venda" required></div>
+    <div class="col-md-3"><label class="form-label">Estoque mínimo</label><input type="number" step="0.001" min="0" class="form-control" id="estoque_min" value="0"></div>
+    <div class="col-md-3"><label class="form-label">NCM</label><input class="form-control" id="ncm" maxlength="8" inputmode="numeric"></div>
+    <div class="col-12"><label class="form-label">Descrição</label><textarea class="form-control" id="descricao" rows="2"></textarea></div>
+    <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="tem_validade"><label class="form-check-label" for="tem_validade">Tem validade (fluidos, borrachas)</label></div></div>
+    <div class="col-md-6"><div class="form-check"><input class="form-check-input" type="checkbox" id="ativo" checked><label class="form-check-label" for="ativo">Ativa</label></div></div>
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+</form></div></div></div>
+
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
-<script>montarLayout();</script>
+<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script>
+montarLayout();
+const $ = (id) => document.getElementById(id); const modal = new bootstrap.Modal('#m'); let lista = [], editId = null;
+async function listar() {
+  try {
+    lista = await API.getPecas({ q: $('busca').value.trim(), ativos: $('soAtivos').checked, limite: 500 });
+    $('tb').innerHTML = lista.length ? lista.map(p => {
+      const margem = p.PRECO_CUSTO_CENT ? Math.round((p.PRECO_VENDA_CENT - p.PRECO_CUSTO_CENT) * 100 / p.PRECO_CUSTO_CENT) + '%' : '—';
+      return `<tr onclick="abrir(${p.ID})"><td class="mono">${esc(p.CODIGO)}</td><td>${esc(p.NOME)}${p.ATIVO ? '' : ' <span class="badge text-bg-secondary">inativa</span>'}</td>
+      <td>${esc(p.FABRICANTE || '')}${p.CODIGO_FABRICANTE ? ' <span class="mono small text-muted">' + esc(p.CODIGO_FABRICANTE) + '</span>' : ''}</td><td class="small">${esc(p.APLICACAO || '')}</td><td>${esc(p.UNIDADE)}</td>
+      <td class="text-end">${formatarMoeda(p.PRECO_CUSTO_CENT)}</td><td class="text-end fw-bold">${formatarMoeda(p.PRECO_VENDA_CENT)}</td><td class="text-end">${margem}</td></tr>`; }).join('')
+      : '<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma peça cadastrada</td></tr>';
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+function abrir(id) {
+  const p = id ? lista.find(x => x.ID === id) : null; editId = id || null;
+  $('mt').textContent = p ? 'Editar peça' : 'Nova peça';
+  $('codigo').value = p ? p.CODIGO : ''; $('nome').value = p ? p.NOME : ''; $('unidade').value = p ? p.UNIDADE : 'UN'; $('fabricante').value = p ? (p.FABRICANTE || '') : '';
+  $('codigo_fabricante').value = p ? (p.CODIGO_FABRICANTE || '') : ''; $('codigo_barras').value = p ? (p.CODIGO_BARRAS || '') : ''; $('aplicacao').value = p ? (p.APLICACAO || '') : '';
+  $('custo').value = p ? centParaReais(p.PRECO_CUSTO_CENT) : ''; $('venda').value = p ? centParaReais(p.PRECO_VENDA_CENT) : ''; $('estoque_min').value = p ? p.ESTOQUE_MIN : 0;
+  $('ncm').value = p ? (p.NCM || '') : ''; $('descricao').value = p ? (p.DESCRICAO || '') : ''; $('tem_validade').checked = p ? !!p.TEM_VALIDADE : false; $('ativo').checked = p ? !!p.ATIVO : true;
+  modal.show(); setTimeout(() => $(p ? 'nome' : 'codigo').focus(), 300);
+}
+$('btnNovo').onclick = () => abrir(null);
+$('f').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const d = { codigo: $('codigo').value, nome: $('nome').value, unidade: $('unidade').value, fabricante: $('fabricante').value || null, codigo_fabricante: $('codigo_fabricante').value || null,
+    codigo_barras: $('codigo_barras').value || null, aplicacao: $('aplicacao').value || null, preco_custo_cent: reaisParaCent($('custo').value), preco_venda_cent: reaisParaCent($('venda').value),
+    estoque_min: parseFloat($('estoque_min').value) || 0, ncm: $('ncm').value || null, descricao: $('descricao').value || null, tem_validade: $('tem_validade').checked, ativo: $('ativo').checked };
+  try { if (editId) await API.editarPeca(editId, d); else await API.criarPeca(d); mostrarAlerta('Salvo'); modal.hide(); listar(); }
+  catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+$('busca').oninput = debounce(listar); $('soAtivos').onchange = listar; listar();
+</script>
 </body>
 </html>

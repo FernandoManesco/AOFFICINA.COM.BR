@@ -38,7 +38,7 @@ function montarLayout() {
   const foot = document.createElement('footer');
   foot.className = 'footer-ia py-2 px-3 d-flex align-items-center gap-2 justify-content-center mt-auto';
   foot.innerHTML = `<img src="/img/iaprocess-badge.png" alt="IA Process Automation">
-    <span>Desenvolvido por <span class="marca">IA PROCESS AUTOMATION</span> · Fernando Manesco · aOfficina v0.1</span>`;
+    <span>Desenvolvido por <span class="marca">IA PROCESS AUTOMATION</span> · Fernando Manesco · aOfficina v0.2</span>`;
 
   const main = document.getElementById('conteudo');
   const wrap = document.createElement('div');

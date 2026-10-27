@@ -65,6 +65,14 @@ class OficinaIn(BaseModel):
     ativo: bool = True
 
 
+def _hora_txt(v) -> str:
+    """MySQL TIME chega como timedelta; o front espera 'HH:MM'."""
+    if v is None:
+        return ""
+    seg = int(v.total_seconds()) if hasattr(v, "total_seconds") else int(v)
+    return f"{seg // 3600:02d}:{(seg % 3600) // 60:02d}"
+
+
 @router.get("/oficinas")
 def listar_oficinas(user=Depends(usuario_atual), con=Depends(db.get_db_dep)):
     sql = "SELECT * FROM OFICINA WHERE EMPRESA_ID = %s"
@@ -72,7 +80,11 @@ def listar_oficinas(user=Depends(usuario_atual), con=Depends(db.get_db_dep)):
     if user.get("oficina_id"):
         sql += " AND ID = %s"
         params.append(user["oficina_id"])
-    return db.todos(con, sql + " ORDER BY NOME", params)
+    rows = db.todos(con, sql + " ORDER BY NOME", params)
+    for r in rows:
+        r["HORA_ABRE"] = _hora_txt(r["HORA_ABRE"])
+        r["HORA_FECHA"] = _hora_txt(r["HORA_FECHA"])
+    return rows
 
 
 @router.post("/oficinas", dependencies=[Depends(requer_nivel(0))])
