@@ -14,6 +14,7 @@ from typing import Generator
 
 import pymysql
 import pymysql.cursors
+from pymysql.constants import CLIENT
 
 import config
 
@@ -28,6 +29,7 @@ def conectar() -> pymysql.connections.Connection:
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor,
         autocommit=False,
+        client_flag=CLIENT.FOUND_ROWS,  # UPDATE devolve linhas ENCONTRADAS, não só alteradas (senão 'salvar sem mudar nada' vira 404)
         connect_timeout=5,
         read_timeout=30,
         write_timeout=30,
