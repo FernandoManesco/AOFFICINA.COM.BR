@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.3 — 27/10/2026
+- scripts/seed_demo.py: carga de demonstração (208 peças, 48 serviços, prefixo DEMO-; --remover limpa).
+- Busca de peças e serviços por palavras ("pastilha onix").
+
 ## v0.3.2 — 27/10/2026
 - Correção: editar um cadastro sem alterar nada dava "não encontrado" (MySQL contava 0 linhas alteradas); conexão agora usa FOUND_ROWS.
 

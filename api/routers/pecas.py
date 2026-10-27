@@ -36,8 +36,12 @@ def buscar(q: str = Query(default="", max_length=60), ativos: bool = True,
         sql += " AND ATIVO = 1"
     t = q.strip()
     if t:
-        sql += " AND (CODIGO LIKE %s OR CODIGO_FABRICANTE LIKE %s OR CODIGO_BARRAS = %s OR NOME LIKE %s OR APLICACAO LIKE %s)"
-        params += [f"{t}%", f"{t}%", t, f"%{t}%", f"%{t}%"]
+        # código de barras exato; senão cada palavra precisa aparecer em algum campo (ex.: "pastilha onix")
+        sql += " AND (CODIGO_BARRAS = %s OR ("
+        params.append(t)
+        partes = t.split()[:5]
+        sql += " AND ".join(["CONCAT_WS(' ', CODIGO, CODIGO_FABRICANTE, NOME, FABRICANTE, APLICACAO) LIKE %s"] * len(partes)) + "))"
+        params += [f"%{w}%" for w in partes]
     sql += " ORDER BY NOME LIMIT %s"
     params.append(limite)
     return db.todos(con, sql, params)

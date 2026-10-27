@@ -37,8 +37,9 @@ def buscar(q: str = Query(default="", max_length=60), ativos: bool = True,
         sql += " AND ATIVO = 1"
     t = q.strip()
     if t:
-        sql += " AND (CODIGO LIKE %s OR NOME LIKE %s OR CATEGORIA LIKE %s)"
-        params += [f"{t}%", f"%{t}%", f"%{t}%"]
+        partes = t.split()[:5]
+        sql += " AND " + " AND ".join(["CONCAT_WS(' ', CODIGO, NOME, CATEGORIA) LIKE %s"] * len(partes))
+        params += [f"%{w}%" for w in partes]
     sql += " ORDER BY CATEGORIA, NOME LIMIT %s"
     params.append(limite)
     rows = db.todos(con, sql, params)
