@@ -1,0 +1,18 @@
+[Unit]
+Description=aOfficina API (FastAPI/Uvicorn, porta 8300)
+After=network.target mysql.service
+Wants=mysql.service
+
+[Service]
+User=deploy
+Group=deploy
+WorkingDirectory=/home/deploy/aofficina/api
+ExecStart=/home/deploy/aofficina/api/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8300 --workers 2 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

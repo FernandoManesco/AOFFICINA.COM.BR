@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aOfficina — Entrar</title>
+<link rel="icon" href="/img/favicon.png">
+<link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
+<link href="/css/app.css?v=1" rel="stylesheet">
+</head>
+<body class="login-bg d-flex flex-column">
+  <div class="flex-grow-1 d-flex align-items-center justify-content-center p-3">
+    <div class="card login-card card-ao">
+      <div class="card-body p-4 p-md-5 text-center">
+        <img class="logo mb-4" src="/img/aofficina-cobre.png" alt="aOfficina" style="filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));">
+        <p class="text-muted mb-4">Gestão de oficinas mecânicas</p>
+        <form id="formLogin" class="text-start" autocomplete="on">
+          <div class="mb-3">
+            <label class="form-label">Usuário</label>
+            <input class="form-control form-control-lg" id="login" autocomplete="username" required autofocus>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Senha</label>
+            <div class="input-group input-group-lg">
+              <input type="password" class="form-control" id="senha" autocomplete="current-password" required>
+              <button class="btn btn-outline-secondary" type="button" id="btnOlho" tabindex="-1"><i class="bi bi-eye"></i></button>
+            </div>
+          </div>
+          <button class="btn btn-cobre btn-lg w-100" id="btnEntrar" type="submit"><i class="bi bi-box-arrow-in-right me-2"></i>Entrar</button>
+          <div class="alert alert-danger mt-3 mb-0 d-none" id="erro"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <footer class="footer-ia py-2 px-3 d-flex align-items-center gap-2 justify-content-center">
+    <img src="/img/iaprocess-badge.png" alt="IA Process Automation">
+    <span>Desenvolvido por <span class="marca">IA PROCESS AUTOMATION</span> · Fernando Manesco</span>
+  </footer>
+
+<script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js?v=1"></script>
+<script src="/js/auth.js?v=1"></script>
+<script>
+  if (new URLSearchParams(location.search).get('expirou')) {
+    const e = document.getElementById('erro'); e.textContent = 'Sua sessão expirou. Entre novamente.'; e.classList.remove('d-none');
+  }
+  document.getElementById('btnOlho').onclick = () => {
+    const s = document.getElementById('senha'); s.type = s.type === 'password' ? 'text' : 'password';
+  };
+  document.getElementById('formLogin').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const btn = document.getElementById('btnEntrar'), erro = document.getElementById('erro');
+    btn.disabled = true; erro.classList.add('d-none');
+    try {
+      const r = await API.login(document.getElementById('login').value.trim(), document.getElementById('senha').value);
+      salvarSessao(r);
+      location.href = r.primeiro_acesso ? '/pages/senha.html' : '/pages/dashboard.html';
+    } catch (e) {
+      erro.textContent = e.message; erro.classList.remove('d-none');
+    } finally { btn.disabled = false; }
+  };
+</script>
+</body>
+</html>

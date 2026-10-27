@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aOfficina — Clientes e Veículos</title>
+<link rel="icon" href="/img/favicon.png">
+<link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
+<link href="/css/app.css?v=1" rel="stylesheet">
+</head>
+<body data-pagina="clientes">
+<main id="conteudo">
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h4 class="mb-0"><i class="bi bi-people me-2 text-secondary"></i>Clientes e Veículos</h4>
+    <button class="btn btn-cobre" onclick="abrirCliente()"><i class="bi bi-person-plus me-1"></i>Novo cliente</button>
+  </div>
+
+  <div class="row g-3">
+    <!-- Lista -->
+    <div class="col-lg-5">
+      <div class="card card-ao">
+        <div class="card-body pb-2">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input class="form-control" id="busca" placeholder="Nome, CPF/CNPJ, telefone ou placa" autofocus>
+          </div>
+          <div class="form-check form-switch mt-2 small"><input class="form-check-input" type="checkbox" id="soAtivos" checked><label class="form-check-label" for="soAtivos">Só ativos</label></div>
+        </div>
+        <div class="table-responsive" style="max-height:65vh">
+          <table class="table table-ao mb-0"><thead><tr><th>Cliente</th><th>Telefone</th><th class="text-center">Veíc.</th></tr></thead><tbody id="tbClientes"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalhe -->
+    <div class="col-lg-7">
+      <div class="card card-ao" id="painelDetalhe" style="display:none">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span id="detNome"></span>
+          <div class="btn-group btn-group-sm">
+            <button class="btn btn-outline-secondary" onclick="abrirCliente(clienteAtual)"><i class="bi bi-pencil"></i> Editar</button>
+            <button class="btn btn-cobre" onclick="abrirVeiculo()"><i class="bi bi-car-front me-1"></i>Novo veículo</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row small text-muted mb-3">
+            <div class="col-md-4"><i class="bi bi-card-text me-1"></i><span id="detDoc"></span></div>
+            <div class="col-md-4"><i class="bi bi-telephone me-1"></i><span id="detFone"></span></div>
+            <div class="col-md-4"><i class="bi bi-whatsapp me-1"></i><span id="detWhats"></span></div>
+            <div class="col-12 mt-1"><i class="bi bi-geo-alt me-1"></i><span id="detEnd"></span></div>
+          </div>
+          <h6 class="text-secondary">Veículos</h6>
+          <div class="table-responsive"><table class="table table-ao table-sm mb-0">
+            <thead><tr><th>Placa</th><th>Marca / Modelo</th><th>Ano</th><th>Cor</th><th class="text-end">Km</th><th></th></tr></thead>
+            <tbody id="tbVeiculos"></tbody></table></div>
+        </div>
+      </div>
+      <div class="text-center text-muted py-5" id="vazio"><i class="bi bi-arrow-left-circle fs-1 d-block mb-2"></i>Selecione um cliente ou cadastre um novo</div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal cliente -->
+<div class="modal fade" id="mCliente" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+  <form id="fCliente">
+  <div class="modal-header"><h5 class="modal-title" id="mClienteTitulo">Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-md-2"><label class="form-label">Tipo</label><select class="form-select" id="c_tipo"><option value="F">Física</option><option value="J">Jurídica</option></select></div>
+    <div class="col-md-6"><label class="form-label">Nome *</label><input class="form-control" id="c_nome" required maxlength="120"></div>
+    <div class="col-md-4"><label class="form-label">CPF / CNPJ</label><input class="form-control" id="c_doc" maxlength="18" inputmode="numeric"></div>
+    <div class="col-md-4"><label class="form-label">Telefone</label><input class="form-control" id="c_tel" maxlength="20"></div>
+    <div class="col-md-4"><label class="form-label">WhatsApp</label><input class="form-control" id="c_whats" maxlength="20"></div>
+    <div class="col-md-4"><label class="form-label">E-mail</label><input type="email" class="form-control" id="c_email" maxlength="120"></div>
+    <div class="col-md-3"><label class="form-label">CEP</label><input class="form-control" id="c_cep" maxlength="9" inputmode="numeric"></div>
+    <div class="col-md-7"><label class="form-label">Logradouro</label><input class="form-control" id="c_log" maxlength="120"></div>
+    <div class="col-md-2"><label class="form-label">Nº</label><input class="form-control" id="c_num" maxlength="10"></div>
+    <div class="col-md-4"><label class="form-label">Complemento</label><input class="form-control" id="c_comp" maxlength="60"></div>
+    <div class="col-md-4"><label class="form-label">Bairro</label><input class="form-control" id="c_bairro" maxlength="60"></div>
+    <div class="col-md-3"><label class="form-label">Cidade</label><input class="form-control" id="c_cidade" maxlength="60"></div>
+    <div class="col-md-1"><label class="form-label">UF</label><input class="form-control text-uppercase" id="c_uf" maxlength="2"></div>
+    <div class="col-12"><label class="form-label">Observação</label><textarea class="form-control" id="c_obs" rows="2"></textarea></div>
+    <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" id="c_ativo" checked><label class="form-check-label" for="c_ativo">Ativo</label></div></div>
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+  </form>
+</div></div></div>
+
+<!-- Modal veículo -->
+<div class="modal fade" id="mVeiculo" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content">
+  <form id="fVeiculo">
+  <div class="modal-header"><h5 class="modal-title" id="mVeiculoTitulo">Veículo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+  <div class="modal-body"><div class="row g-2">
+    <div class="col-md-3"><label class="form-label">Placa *</label><input class="form-control text-uppercase placa-input" id="v_placa" required maxlength="8" placeholder="ABC1D23"></div>
+    <div class="col-md-3"><label class="form-label">Tipo</label><select class="form-select" id="v_tipo" onchange="carregarMarcas()"><option value="1">Carro / utilitário</option><option value="2">Moto</option><option value="3">Caminhão</option></select></div>
+    <div class="col-md-6"><label class="form-label">Busca rápida no catálogo</label><input class="form-control" id="v_busca" placeholder="ex.: gol 1.0, onix, hilux" autocomplete="off"><div class="list-group position-absolute shadow" id="v_sugestoes" style="z-index:1060;max-height:220px;overflow:auto;display:none"></div></div>
+    <div class="col-md-4"><label class="form-label">Marca *</label><select class="form-select" id="v_marca" onchange="carregarModelos()"></select></div>
+    <div class="col-md-5"><label class="form-label">Modelo *</label><select class="form-select" id="v_modelo" onchange="carregarAnos()"></select></div>
+    <div class="col-md-3"><label class="form-label">Ano modelo</label><select class="form-select" id="v_ano"></select></div>
+    <div class="col-md-3"><label class="form-label">Ano fabricação</label><input type="number" class="form-control" id="v_anofab" min="1950" max="2100"></div>
+    <div class="col-md-3"><label class="form-label">Cor</label><input class="form-control" id="v_cor" maxlength="30"></div>
+    <div class="col-md-3"><label class="form-label">Combustível</label><input class="form-control" id="v_comb" maxlength="20" list="combs"><datalist id="combs"><option>Gasolina<option>Flex<option>Diesel<option>Etanol<option>GNV<option>Elétrico<option>Híbrido</datalist></div>
+    <div class="col-md-3"><label class="form-label">Km atual</label><input type="number" class="form-control" id="v_km" min="0"></div>
+    <div class="col-md-5"><label class="form-label">Chassi</label><input class="form-control text-uppercase" id="v_chassi" maxlength="17"></div>
+    <div class="col-md-4"><label class="form-label">Renavam</label><input class="form-control" id="v_renavam" maxlength="11" inputmode="numeric"></div>
+    <div class="col-md-3"><div class="form-check mt-4"><input class="form-check-input" type="checkbox" id="v_manual"><label class="form-check-label" for="v_manual">Fora do catálogo</label></div></div>
+    <div class="col-md-6 manual" style="display:none"><label class="form-label">Marca (digitada)</label><input class="form-control" id="v_marca_txt" maxlength="60"></div>
+    <div class="col-md-6 manual" style="display:none"><label class="form-label">Modelo (digitado)</label><input class="form-control" id="v_modelo_txt" maxlength="120"></div>
+    <div class="col-12"><label class="form-label">Observação</label><textarea class="form-control" id="v_obs" rows="2"></textarea></div>
+    <div class="col-12"><div class="form-check"><input class="form-check-input" type="checkbox" id="v_ativo" checked><label class="form-check-label" for="v_ativo">Ativo</label></div></div>
+  </div></div>
+  <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-cobre">Salvar</button></div>
+  </form>
+</div></div></div>
+
+<script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
+<script>
+montarLayout();
+let clienteAtual = null, clienteDados = null, veiculoEdit = null, timer = null;
+const $ = (id) => document.getElementById(id);
+const mCliente = new bootstrap.Modal('#mCliente'), mVeiculo = new bootstrap.Modal('#mVeiculo');
+
+// ---------- lista ----------
+async function listar() {
+  try {
+    const rows = await API.getClientes({ q: $('busca').value.trim(), ativos: $('soAtivos').checked, limite: 200 });
+    $('tbClientes').innerHTML = rows.length ? rows.map(c => `<tr onclick="selecionar(${c.ID})" class="${c.ID === clienteAtual ? 'table-active' : ''}">
+      <td>${esc(c.NOME)}${c.ATIVO ? '' : ' <span class="badge text-bg-secondary">inativo</span>'}<div class="small text-muted">${esc(formatarDoc(c.CPF_CNPJ))}</div></td>
+      <td>${esc(formatarFone(c.WHATSAPP || c.TELEFONE))}</td><td class="text-center">${c.QTD_VEICULOS}</td></tr>`).join('')
+      : '<tr><td colspan="3" class="text-center text-muted py-4">Nenhum cliente encontrado</td></tr>';
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+$('busca').oninput = () => { clearTimeout(timer); timer = setTimeout(listar, 300); };
+$('soAtivos').onchange = listar;
+
+async function selecionar(id) {
+  try {
+    clienteDados = await API.getCliente(id); clienteAtual = id;
+    $('vazio').style.display = 'none'; $('painelDetalhe').style.display = '';
+    $('detNome').textContent = clienteDados.NOME;
+    $('detDoc').textContent = formatarDoc(clienteDados.CPF_CNPJ) || '—';
+    $('detFone').textContent = formatarFone(clienteDados.TELEFONE) || '—';
+    $('detWhats').textContent = formatarFone(clienteDados.WHATSAPP) || '—';
+    $('detEnd').textContent = [clienteDados.LOGRADOURO, clienteDados.NUMERO, clienteDados.BAIRRO, clienteDados.CIDADE && (clienteDados.CIDADE + '/' + (clienteDados.UF || ''))].filter(Boolean).join(', ') || '—';
+    const vs = clienteDados.veiculos || [];
+    $('tbVeiculos').innerHTML = vs.length ? vs.map(v => `<tr>
+      <td><span class="placa">${esc(formatarPlaca(v.PLACA))}</span>${v.ATIVO ? '' : ' <span class="badge text-bg-secondary">inativo</span>'}</td>
+      <td>${esc(v.MARCA)} ${esc(v.MODELO)}</td><td>${esc(v.ANO_FAB || '')}${v.ANO_MODELO ? '/' + esc(v.ANO_MODELO) : ''}</td>
+      <td>${esc(v.COR || '')}</td><td class="text-end">${v.KM_ATUAL ? Number(v.KM_ATUAL).toLocaleString('pt-BR') : ''}</td>
+      <td class="text-end"><button class="btn btn-sm btn-outline-secondary" onclick="abrirVeiculo(${v.ID})"><i class="bi bi-pencil"></i></button>
+      <a class="btn btn-sm btn-cobre ms-1" href="/pages/pedidos.html?novo=1&veiculo=${v.ID}" title="Novo orçamento"><i class="bi bi-clipboard2-plus"></i></a></td></tr>`).join('')
+      : '<tr><td colspan="6" class="text-muted text-center py-3">Nenhum veículo — clique em "Novo veículo"</td></tr>';
+    listar();
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+}
+
+// ---------- cliente ----------
+function abrirCliente(id) {
+  const c = id ? clienteDados : null;
+  $('mClienteTitulo').textContent = c ? 'Editar cliente' : 'Novo cliente';
+  $('c_tipo').value = c ? c.TIPO_PESSOA : 'F'; $('c_nome').value = c ? c.NOME : ''; $('c_doc').value = c ? formatarDoc(c.CPF_CNPJ) : '';
+  $('c_tel').value = c ? (c.TELEFONE || '') : ''; $('c_whats').value = c ? (c.WHATSAPP || '') : ''; $('c_email').value = c ? (c.EMAIL || '') : '';
+  $('c_cep').value = c ? (c.CEP || '') : ''; $('c_log').value = c ? (c.LOGRADOURO || '') : ''; $('c_num').value = c ? (c.NUMERO || '') : '';
+  $('c_comp').value = c ? (c.COMPLEMENTO || '') : ''; $('c_bairro').value = c ? (c.BAIRRO || '') : ''; $('c_cidade').value = c ? (c.CIDADE || '') : '';
+  $('c_uf').value = c ? (c.UF || '') : ''; $('c_obs').value = c ? (c.OBSERVACAO || '') : ''; $('c_ativo').checked = c ? !!c.ATIVO : true;
+  $('fCliente').dataset.id = id || '';
+  mCliente.show(); setTimeout(() => $('c_nome').focus(), 300);
+}
+$('fCliente').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const d = { tipo_pessoa: $('c_tipo').value, nome: $('c_nome').value, cpf_cnpj: $('c_doc').value, telefone: $('c_tel').value, whatsapp: $('c_whats').value,
+    email: $('c_email').value || null, cep: $('c_cep').value, logradouro: $('c_log').value, numero: $('c_num').value, complemento: $('c_comp').value,
+    bairro: $('c_bairro').value, cidade: $('c_cidade').value, uf: $('c_uf').value, observacao: $('c_obs').value, ativo: $('c_ativo').checked };
+  try {
+    const id = $('fCliente').dataset.id;
+    if (id) { await API.editarCliente(id, d); mostrarAlerta('Cliente atualizado'); await selecionar(parseInt(id)); }
+    else { const r = await API.criarCliente(d); mostrarAlerta('Cliente cadastrado'); await selecionar(r.id); }
+    mCliente.hide();
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+
+// ---------- catálogo ----------
+async function carregarMarcas(selId) {
+  const ms = await API.getMarcas($('v_tipo').value);
+  $('v_marca').innerHTML = '<option value="">—</option>' + ms.map(m => `<option value="${m.ID}">${esc(m.NOME)}</option>`).join('');
+  $('v_modelo').innerHTML = '<option value="">—</option>'; $('v_ano').innerHTML = '<option value="">—</option>';
+  if (selId) { $('v_marca').value = selId; }
+  if (!ms.length) { $('v_manual').checked = true; $('v_manual').onchange(); }
+}
+async function carregarModelos(selId) {
+  const mid = $('v_marca').value; $('v_modelo').innerHTML = '<option value="">—</option>'; $('v_ano').innerHTML = '<option value="">—</option>';
+  if (!mid) return;
+  const ms = await API.getModelos(mid);
+  $('v_modelo').innerHTML += ms.map(m => `<option value="${m.ID}" data-fipe="${esc(m.CODIGO_FIPE)}">${esc(m.NOME)}</option>`).join('');
+  if (selId) $('v_modelo').value = selId;
+}
+async function carregarAnos(sel) {
+  const mid = $('v_modelo').value; $('v_ano').innerHTML = '<option value="">—</option>';
+  if (!mid) return;
+  const as = await API.getAnos(mid);
+  $('v_ano').innerHTML += as.map(a => `<option value="${a.ANO}" data-comb="${esc(a.COMBUSTIVEL || '')}" data-fipe="${esc(a.CODIGO_FIPE)}">${a.ANO}${a.COMBUSTIVEL ? ' ' + esc(a.COMBUSTIVEL) : ''}</option>`).join('');
+  if (sel) $('v_ano').value = sel;
+}
+$('v_ano').onchange = () => { const o = $('v_ano').selectedOptions[0]; if (o && o.dataset.comb && !$('v_comb').value) $('v_comb').value = o.dataset.comb; if (o && !$('v_anofab').value && o.value) $('v_anofab').value = o.value; };
+$('v_busca').oninput = () => {
+  clearTimeout(timer);
+  const q = $('v_busca').value.trim(); const box = $('v_sugestoes');
+  if (q.length < 2) { box.style.display = 'none'; return; }
+  timer = setTimeout(async () => {
+    const rs = await API.buscarCatalogo(q, $('v_tipo').value);
+    box.innerHTML = rs.map(r => `<button type="button" class="list-group-item list-group-item-action py-1 small" data-marca="${r.MARCA_ID}" data-modelo="${r.MODELO_ID}"><b>${esc(r.MARCA)}</b> ${esc(r.MODELO)}</button>`).join('');
+    box.style.display = rs.length ? '' : 'none';
+    box.querySelectorAll('button').forEach(b => b.onclick = async () => { box.style.display = 'none'; $('v_busca').value = b.textContent; $('v_marca').value = b.dataset.marca; await carregarModelos(b.dataset.modelo); await carregarAnos(); });
+  }, 300);
+};
+$('v_manual').onchange = () => { const on = $('v_manual').checked; document.querySelectorAll('.manual').forEach(e => e.style.display = on ? '' : 'none'); ['v_marca', 'v_modelo', 'v_ano', 'v_busca'].forEach(i => $(i).disabled = on); };
+
+// ---------- veículo ----------
+async function abrirVeiculo(id) {
+  veiculoEdit = id ? (clienteDados.veiculos || []).find(v => v.ID === id) : null;
+  const v = veiculoEdit;
+  $('mVeiculoTitulo').textContent = (v ? 'Editar veículo' : 'Novo veículo') + ' — ' + clienteDados.NOME;
+  $('v_placa').value = v ? v.PLACA : ''; $('v_tipo').value = v ? v.TIPO : 1; $('v_busca').value = '';
+  $('v_anofab').value = v ? (v.ANO_FAB || '') : ''; $('v_cor').value = v ? (v.COR || '') : ''; $('v_comb').value = v ? (v.COMBUSTIVEL || '') : '';
+  $('v_km').value = v ? (v.KM_ATUAL || '') : ''; $('v_chassi').value = v ? (v.CHASSI || '') : ''; $('v_renavam').value = v ? (v.RENAVAM || '') : '';
+  $('v_obs').value = v ? (v.OBSERVACAO || '') : ''; $('v_ativo').checked = v ? !!v.ATIVO : true;
+  $('v_manual').checked = !!(v && !v.CAT_MODELO_ID); $('v_manual').onchange();
+  $('v_marca_txt').value = v ? v.MARCA : ''; $('v_modelo_txt').value = v ? v.MODELO : '';
+  mVeiculo.show();
+  await carregarMarcas();
+  if (v && v.CAT_MODELO_ID) {
+    // acha a marca do modelo salvo via busca
+    const rs = await API.buscarCatalogo(v.MARCA + ' ' + v.MODELO, v.TIPO);
+    const hit = rs.find(r => r.MODELO_ID === v.CAT_MODELO_ID);
+    if (hit) { $('v_marca').value = hit.MARCA_ID; await carregarModelos(hit.MODELO_ID); await carregarAnos(v.ANO_MODELO); }
+  }
+  setTimeout(() => $('v_placa').focus(), 300);
+}
+$('fVeiculo').onsubmit = async (ev) => {
+  ev.preventDefault();
+  const manual = $('v_manual').checked;
+  const marca = manual ? $('v_marca_txt').value : ($('v_marca').selectedOptions[0] || {}).text;
+  const modelo = manual ? $('v_modelo_txt').value : ($('v_modelo').selectedOptions[0] || {}).text;
+  if (!marca || !modelo || marca === '—' || modelo === '—') return mostrarAlerta('Informe marca e modelo', 'warning');
+  const anoOpt = $('v_ano').selectedOptions[0];
+  const d = { cliente_id: clienteAtual, placa: $('v_placa').value, tipo: parseInt($('v_tipo').value), marca, modelo,
+    ano_fab: $('v_anofab').value ? parseInt($('v_anofab').value) : null, ano_modelo: !manual && $('v_ano').value ? parseInt($('v_ano').value) : ($('v_anofab').value ? parseInt($('v_anofab').value) : null),
+    cor: $('v_cor').value || null, combustivel: $('v_comb').value || null, chassi: $('v_chassi').value || null, renavam: $('v_renavam').value || null,
+    km_atual: $('v_km').value ? parseInt($('v_km').value) : null, cat_modelo_id: manual ? null : (parseInt($('v_modelo').value) || null),
+    codigo_fipe: manual ? null : (anoOpt && anoOpt.dataset.fipe ? ($('v_modelo').selectedOptions[0].dataset.fipe + '/' + anoOpt.dataset.fipe) : null),
+    observacao: $('v_obs').value || null, ativo: $('v_ativo').checked };
+  try {
+    if (veiculoEdit) { await API.editarVeiculo(veiculoEdit.ID, d); mostrarAlerta('Veículo atualizado'); }
+    else { await API.criarVeiculo(d); mostrarAlerta('Veículo cadastrado'); }
+    mVeiculo.hide(); await selecionar(clienteAtual);
+  } catch (e) { mostrarAlerta(e.message, 'danger'); }
+};
+
+// placa: busca direta (recepção)
+$('busca').addEventListener('keydown', async (ev) => {
+  if (ev.key !== 'Enter') return;
+  const t = $('busca').value.trim().replace('-', '').toUpperCase();
+  if (/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/.test(t)) { try { const v = await API.getVeiculoPorPlaca(t); selecionar(v.CLIENTE_ID); } catch (e) { mostrarAlerta(e.message, 'warning'); } }
+});
+listar();
+const pid = new URLSearchParams(location.search).get('id'); if (pid) selecionar(parseInt(pid));
+</script>
+</body>
+</html>

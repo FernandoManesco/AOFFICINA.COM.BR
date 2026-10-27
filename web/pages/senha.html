@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aOfficina — Trocar senha</title>
+<link rel="icon" href="/img/favicon.png">
+<link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
+<link href="/css/app.css?v=1" rel="stylesheet">
+</head>
+<body data-pagina="senha">
+<main id="conteudo">
+  <div class="card card-ao mx-auto" style="max-width:480px">
+    <div class="card-header"><i class="bi bi-shield-lock me-2"></i>Trocar senha</div>
+    <div class="card-body">
+      <form id="f">
+        <div class="mb-3"><label class="form-label">Senha atual</label><input type="password" class="form-control" id="atual" required autocomplete="current-password"></div>
+        <div class="mb-3"><label class="form-label">Nova senha (mín. 8)</label><input type="password" class="form-control" id="nova" minlength="8" required autocomplete="new-password"></div>
+        <div class="mb-3"><label class="form-label">Repita a nova senha</label><input type="password" class="form-control" id="nova2" minlength="8" required autocomplete="new-password"></div>
+        <button class="btn btn-cobre w-100">Salvar</button>
+      </form>
+    </div>
+  </div>
+</main>
+<script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
+<script>
+  montarLayout();
+  document.getElementById('f').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const n = document.getElementById('nova').value;
+    if (n !== document.getElementById('nova2').value) return mostrarAlerta('As senhas não conferem', 'danger');
+    try {
+      await API.trocarSenha(document.getElementById('atual').value, n);
+      localStorage.setItem('primeiro_acesso', '0');
+      mostrarAlerta('Senha alterada'); setTimeout(() => location.href = '/pages/dashboard.html', 800);
+    } catch (e) { mostrarAlerta(e.message, 'danger'); }
+  };
+</script>
+</body>
+</html>

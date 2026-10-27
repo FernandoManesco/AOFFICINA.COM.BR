@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aOfficina — Painel</title>
+<link rel="icon" href="/img/favicon.png">
+<link href="/vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+<link href="/vendor/icons/bootstrap-icons.min.css" rel="stylesheet">
+<link href="/css/app.css?v=1" rel="stylesheet">
+</head>
+<body data-pagina="dashboard">
+<main id="conteudo">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0"><i class="bi bi-speedometer2 me-2 text-secondary"></i>Painel</h4>
+    <div class="d-flex gap-2">
+      <a class="btn btn-cobre" href="/pages/pedidos.html?novo=1"><i class="bi bi-plus-lg me-1"></i>Novo orçamento</a>
+      <a class="btn btn-outline-cobre" href="/pages/agenda.html"><i class="bi bi-calendar-plus me-1"></i>Agendar</a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="card card-ao kpi"><div class="card-body"><div class="valor" id="kAgenda">–</div><div class="rotulo">Agendados hoje</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-ao kpi"><div class="card-body"><div class="valor" id="kOrc">–</div><div class="rotulo">Orçamentos abertos</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-ao kpi"><div class="card-body"><div class="valor" id="kExec">–</div><div class="rotulo">Pedidos em execução</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="card card-ao kpi"><div class="card-body"><div class="valor" id="kConc">–</div><div class="rotulo">Prontos p/ entrega</div></div></div></div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-6">
+      <div class="card card-ao"><div class="card-header"><i class="bi bi-calendar-week me-2"></i>Agenda de hoje</div>
+        <div class="table-responsive"><table class="table table-ao mb-0"><thead><tr><th>Hora</th><th>Veículo</th><th>Cliente</th><th>Recurso</th><th>Status</th></tr></thead><tbody id="tbAgenda"></tbody></table></div></div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card card-ao"><div class="card-header"><i class="bi bi-clipboard2-check me-2"></i>Pedidos em andamento</div>
+        <div class="table-responsive"><table class="table table-ao mb-0"><thead><tr><th>Nº</th><th>Veículo</th><th>Cliente</th><th>Status</th><th class="text-end">Total</th></tr></thead><tbody id="tbPedidos"></tbody></table></div></div>
+    </div>
+  </div>
+</main>
+<script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js?v=1"></script><script src="/js/auth.js?v=1"></script><script src="/js/layout.js?v=1"></script>
+<script>
+  montarLayout();
+  (async () => {
+    try {
+      const ofs = await API.getOficinas();
+      const of = getOficinaId() || (ofs[0] && ofs[0].ID);
+      const hoje = new Date().toISOString().slice(0, 10);
+      const [ag, orc, exec, conc, aprov] = await Promise.all([
+        of ? API.getAgenda({ oficina_id: of, de: hoje + 'T00:00:00', ate: hoje + 'T23:59:59' }) : [],
+        API.getPedidos({ tipo: 'ORCAMENTO', status: 'ABERTO' }),
+        API.getPedidos({ tipo: 'PEDIDO', status: 'EM_EXECUCAO' }),
+        API.getPedidos({ tipo: 'PEDIDO', status: 'CONCLUIDO' }),
+        API.getPedidos({ tipo: 'PEDIDO', status: 'APROVADO' }),
+      ]);
+      kAgenda.textContent = ag.length; kOrc.textContent = orc.length; kExec.textContent = exec.length; kConc.textContent = conc.length;
+      tbAgenda.innerHTML = ag.length ? ag.map(a => `<tr onclick="location.href='/pages/agenda.html?dia=${hoje}'">
+        <td>${esc(new Date(a.INICIO).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }))}</td>
+        <td>${a.PLACA ? '<span class="placa">' + esc(formatarPlaca(a.PLACA)) + '</span> ' : ''}${esc(a.MODELO || '')}</td>
+        <td>${esc(a.CLIENTE_NOME || a.TITULO)}</td><td>${esc(a.FUNCIONARIO_NOME || a.EQUIPAMENTO_NOME || '')}</td>
+        <td><span class="badge text-bg-secondary">${esc(a.STATUS)}</span></td></tr>`).join('')
+        : '<tr><td colspan="5" class="text-muted text-center py-3">Nada agendado para hoje</td></tr>';
+      const lista = [...aprov, ...exec, ...conc];
+      tbPedidos.innerHTML = lista.length ? lista.map(p => `<tr onclick="location.href='/pages/pedido.html?id=${p.ID}'">
+        <td class="mono">${esc(p.NUMERO_PEDIDO)}</td><td><span class="placa">${esc(formatarPlaca(p.PLACA))}</span> ${esc(p.MODELO)}</td>
+        <td>${esc(p.CLIENTE_NOME)}</td><td><span class="badge text-bg-${{ APROVADO: 'primary', EM_EXECUCAO: 'warning', CONCLUIDO: 'success' }[p.STATUS] || 'secondary'}">${esc(p.STATUS)}</span></td>
+        <td class="text-end">${formatarMoeda(p.TOTAL_CENT)}</td></tr>`).join('')
+        : '<tr><td colspan="5" class="text-muted text-center py-3">Nenhum pedido em andamento</td></tr>';
+    } catch (e) { mostrarAlerta(e.message, 'danger'); }
+  })();
+</script>
+</body>
+</html>
