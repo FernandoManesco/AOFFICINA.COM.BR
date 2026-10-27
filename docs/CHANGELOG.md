@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.4.0 — 27/10/2026
+- Fechamento com pagamento: tela "Receber e entregar" no pedido concluído — Dinheiro (troco), PIX (QR Code BR Code demonstrativo + copia e cola), Débito, Crédito (1 a 6x com valor da parcela), Boleto (exige CPF/CNPJ e endereço; fica em aberto com vencimento). Pagamento dividido; "Fechar pedido e entregar" só com o total coberto.
+- Tabela PAGAMENTO (v004) — base do WebFinanceiro. ENTREGUE agora só pelo fechamento com pagamento.
+- requirements: qrcode + Pillow.
+
+## v0.3.4 — 27/10/2026
+- Leitor de placa pela câmera (tablet): botão "Placa" no painel, na lista de pedidos e na tela do pedido. OCR local (Tesseract) no servidor; candidatas com correção de confusões (O/0, I/1, B/8…); placa sempre confirmável à mão.
+- Painel do veículo pela placa: pedidos em andamento (abre direto se for um só), histórico de atendimentos na oficina (data, km, serviços, peças, valor) e botão "Novo orçamento".
+- API: POST /veiculos/ler-placa, GET /veiculos/{id}/historico.
+- Instalação: `sudo apt install -y tesseract-ocr` + `pip install -r requirements-ia.txt`.
+
 ## v0.3.3 — 27/10/2026
 - scripts/seed_demo.py: carga de demonstração (208 peças, 48 serviços, prefixo DEMO-; --remover limpa).
 - Busca de peças e serviços por palavras ("pastilha onix").

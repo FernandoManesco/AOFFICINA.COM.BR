@@ -26,7 +26,7 @@
 
   <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
     <div class="d-flex align-items-center gap-2">
-      <a class="btn btn-outline-secondary btn-sm no-print" href="/pages/pedidos.html"><i class="bi bi-arrow-left"></i></a>
+      <a class="btn btn-outline-secondary btn-sm no-print" href="/pages/pedidos.html"><i class="bi bi-arrow-left"></i></a><button class="btn btn-outline-cobre btn-sm no-print" type="button" onclick="abrirLeitorPlaca()" title="Localizar outro veículo pela placa"><i class="bi bi-camera"></i></button>
       <h4 class="mb-0" id="titulo">Pedido</h4><span id="status"></span>
     </div>
     <div class="d-flex gap-2 flex-wrap no-print" id="acoes"></div>
@@ -125,7 +125,7 @@
 </form></div></div></div>
 
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=3"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script><script src="/js/ia.js?v=3"></script>
+<script src="/js/api.js?v=3"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script><script src="/js/placa.js?v=3"></script><script src="/js/pagamento.js?v=4"></script><script src="/js/ia.js?v=3"></script>
 <script>
 montarLayout();
 const $ = (id) => document.getElementById(id); const ID = parseInt(new URLSearchParams(location.search).get('id'));
@@ -180,7 +180,8 @@ function render() {
     if (['APROVADO', 'EM_EXECUCAO'].includes(P.STATUS)) st('AGUARDANDO_PECA', 'Aguardando peça', 'outline-warning');
     if (P.STATUS === 'AGUARDANDO_PECA') st('EM_EXECUCAO', 'Retomar execução', 'warning');
     if (['APROVADO', 'EM_EXECUCAO', 'AGUARDANDO_PECA'].includes(P.STATUS) && nivel <= 2) st('CONCLUIDO', 'Concluir', 'success', '<i class="bi bi-flag-fill me-1"></i>');
-    if (P.STATUS === 'CONCLUIDO' && nivel <= 2) st('ENTREGUE', 'Entregar ao cliente', 'success', '<i class="bi bi-car-front me-1"></i>');
+    if (P.STATUS === 'CONCLUIDO' && nivel <= 2) a.push(`<button class="btn btn-sm btn-success" onclick="abrirPagamento(ID, 'Pedido nº ${P.NUMERO_PEDIDO}', carregar)"><i class="bi bi-cash-coin me-1"></i>Receber e entregar</button>`);
+    if (['APROVADO', 'EM_EXECUCAO', 'AGUARDANDO_PECA', 'ENTREGUE'].includes(P.STATUS) && nivel <= 2) a.push(`<button class="btn btn-sm btn-outline-secondary" onclick="abrirPagamento(ID, 'Pedido nº ${P.NUMERO_PEDIDO}', carregar)"><i class="bi bi-cash-coin me-1"></i>Pagamentos</button>`);
   }
   if (!['ENTREGUE', 'FATURADO', 'CANCELADO'].includes(P.STATUS) && nivel <= 1) st('CANCELADO', 'Cancelar', 'outline-danger');
   $('acoes').innerHTML = a.join('');

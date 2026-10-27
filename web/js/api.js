@@ -65,6 +65,8 @@ const API = {
   inativarCliente: (id) => _del('/clientes/' + id),
   getVeiculos: (f) => apiCall('/veiculos' + _qs(f)),
   getVeiculoPorPlaca: (placa) => apiCall('/veiculos/placa/' + encodeURIComponent(placa)),
+  lerPlaca: (fd) => apiUpload('/veiculos/ler-placa', fd),
+  historicoVeiculo: (id) => apiCall('/veiculos/' + id + '/historico'),
   criarVeiculo: (d) => _post('/veiculos', d),
   editarVeiculo: (id, d) => _put('/veiculos/' + id, d),
   inativarVeiculo: (id) => _del('/veiculos/' + id),
@@ -106,4 +108,11 @@ const API = {
   iaPesquisar: (d) => _post('/ia/pesquisar', d),
   iaTranscrever: (fd) => apiUpload('/ia/transcrever', fd),
   statusPedido: (id, status) => _post('/pedidos/' + id + '/status' + _qs({ status })),
+  // pagamentos
+  getPagamentos: (id) => apiCall('/pedidos/' + id + '/pagamentos'),
+  lancarPagamento: (id, d) => _post('/pedidos/' + id + '/pagamentos', d),
+  pagoPagamento: (id, pid, pago) => _patch('/pedidos/' + id + '/pagamentos/' + pid + '/pago' + _qs({ pago })),
+  delPagamento: (id, pid) => _del('/pedidos/' + id + '/pagamentos/' + pid),
+  fecharPedido: (id) => _post('/pedidos/' + id + '/fechar'),
+  pixQrUrl: (id, valor_cent) => API_URL + '/pedidos/' + id + '/pix-qr' + _qs({ valor_cent }),
 };

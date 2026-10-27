@@ -136,6 +136,15 @@ cd /home/deploy/aofficina/api && .venv/bin/pip install -r requirements-ia.txt &&
 ```
 Conferir: `curl -s -H "Authorization: Bearer TOKEN" http://127.0.0.1:8300/ia/status` (ou abrir um pedido e clicar em ✨).
 
+## 12. Leitor de placa pela câmera (v3.4)
+```bash
+# [ SERVIDOR ]
+sudo apt install -y tesseract-ocr
+cd /home/deploy/aofficina/api && .venv/bin/pip install pytesseract Pillow && .venv/bin/python -c "import pytesseract; print(pytesseract.get_tesseract_version())"
+sudo systemctl restart aofficina-api
+```
+No tablet, a câmera só abre em HTTPS (já é o caso em app.aofficina.com.br) e após permitir no navegador.
+
 ## Operação
 | Ação | Comando `[ SERVIDOR ]` |
 |---|---|

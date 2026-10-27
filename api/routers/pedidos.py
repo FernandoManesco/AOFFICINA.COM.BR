@@ -343,6 +343,8 @@ def mudar_status(pedido_id: int, status: str = Query(pattern="^(ENVIADO|RECUSADO
         raise HTTPException(status_code=409, detail="Status de orçamento em um pedido")
     if status in ("EM_EXECUCAO", "AGUARDANDO_PECA", "CONCLUIDO", "ENTREGUE") and p["TIPO"] != "PEDIDO":
         raise HTTPException(status_code=409, detail="Aprove o orçamento antes")
+    if status == "ENTREGUE":
+        raise HTTPException(status_code=409, detail="Use 'Receber e entregar' (pagamento) para entregar o veículo")
     if status == "CONCLUIDO":
         pend = db.um(con, "SELECT COUNT(*) N FROM PEDIDO_SERVICO WHERE PEDIDO_ID = %s AND AUTORIZADO = 1 AND EXECUTADO = 0", [pedido_id])
         if pend["N"]:

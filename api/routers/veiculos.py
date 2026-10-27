@@ -2,10 +2,11 @@
 import re
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
 
 import db
+from utils import placa_ocr
 from utils.auth import requer_nivel, usuario_atual
 
 router = APIRouter(prefix="/veiculos", tags=["veiculos"], dependencies=[Depends(requer_nivel(3))])
@@ -37,6 +38,46 @@ def normalizar_placa(p: str) -> str:
     if not RE_PLACA.match(p):
         raise HTTPException(status_code=400, detail="Placa inválida (use ABC1234 ou ABC1D23)")
     return p
+
+
+@router.post("/ler-placa")
+def ler_placa(imagem: UploadFile = File(...), user=Depends(usuario_atual), con=Depends(db.get_db_dep)):
+    """Foto recortada da placa (tablet) -> candidatas de placa + se existe veículo/pedido aberto para cada uma."""
+    if not placa_ocr.disponivel():
+        raise HTTPException(503, "Leitura de placa não instalada no servidor (tesseract-ocr + pytesseract)")
+    dados = imagem.file.read(8 * 1024 * 1024 + 1)
+    if not dados or len(dados) > 8 * 1024 * 1024:
+        raise HTTPException(422, "Imagem vazia ou acima de 8 MB")
+    try:
+        r = placa_ocr.ler(dados)
+    except Exception as e:  # noqa: BLE001
+        raise HTTPException(502, "OCR falhou: %s" % str(e)[:160])
+    saida = []
+    for pl in r["placas"]:
+        v = db.um(con, """SELECT V.ID VEICULO_ID, V.MARCA, V.MODELO, C.NOME CLIENTE_NOME,
+                                 (SELECT COUNT(*) FROM PEDIDO P WHERE P.VEICULO_ID = V.ID AND P.STATUS NOT IN ('ENTREGUE','FATURADO','CANCELADO','RECUSADO')) ABERTOS
+                          FROM VEICULO V JOIN CLIENTE C ON C.ID = V.CLIENTE_ID WHERE V.EMPRESA_ID = %s AND V.PLACA = %s""",
+                  [user["empresa_id"], pl])
+        saida.append({"placa": pl, "cadastrada": bool(v), **({k: v[k] for k in ("VEICULO_ID", "MARCA", "MODELO", "CLIENTE_NOME", "ABERTOS")} if v else {})})
+    return {"candidatas": saida, "texto_ocr": r["texto"]}
+
+
+@router.get("/{veiculo_id}/historico")
+def historico(veiculo_id: int, limite: int = Query(default=20, le=100), user=Depends(usuario_atual), con=Depends(db.get_db_dep)):
+    """Histórico de atendimentos do veículo: pedidos (abertos e fechados) com resumo dos serviços."""
+    v = db.um(con, """SELECT V.*, C.NOME CLIENTE_NOME, C.TELEFONE CLIENTE_TELEFONE, C.WHATSAPP CLIENTE_WHATSAPP
+                      FROM VEICULO V JOIN CLIENTE C ON C.ID = V.CLIENTE_ID WHERE V.ID = %s AND V.EMPRESA_ID = %s""",
+              [veiculo_id, user["empresa_id"]])
+    if not v:
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
+    peds = db.todos(con, """SELECT P.ID, P.TIPO, P.STATUS, P.NUMERO_ORCAMENTO, P.NUMERO_PEDIDO, P.ABERTO_EM, P.ENTREGUE_EM, P.KM_ENTRADA,
+                                   P.TOTAL_CENT, P.QUEIXA, P.DIAGNOSTICO, F.NOME FUNCIONARIO_NOME,
+                                   (SELECT GROUP_CONCAT(S.DESCRICAO ORDER BY S.ID SEPARATOR ' · ') FROM PEDIDO_SERVICO S WHERE S.PEDIDO_ID = P.ID AND S.AUTORIZADO = 1) SERVICOS,
+                                   (SELECT GROUP_CONCAT(CONCAT(TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM CAST(PP.QUANTIDADE AS CHAR))), 'x ', PP.DESCRICAO) ORDER BY PP.ID SEPARATOR ' · ') FROM PEDIDO_PECA PP WHERE PP.PEDIDO_ID = P.ID AND PP.AUTORIZADO = 1) PECAS
+                            FROM PEDIDO P LEFT JOIN FUNCIONARIO F ON F.ID = P.FUNCIONARIO_ID
+                            WHERE P.VEICULO_ID = %s ORDER BY P.ABERTO_EM DESC LIMIT %s""", [veiculo_id, limite])
+    abertos = [p for p in peds if p["STATUS"] not in ("ENTREGUE", "FATURADO", "CANCELADO", "RECUSADO")]
+    return {"veiculo": v, "abertos": abertos, "historico": [p for p in peds if p not in abertos]}
 
 
 @router.get("/placa/{placa}")
