@@ -1,59 +1,412 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>aOfficina — Sistema de gestão para oficinas mecânicas</title>
-<meta name="description" content="aOfficina: sistema completo para redes de oficinas mecânicas — agenda, orçamentos, ordens de serviço, peças, mão de obra e financeiro. Licença definitiva, sem mensalidade.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>aOfficina — Gestão para oficinas de alto padrão</title>
+<meta name="description" content="aOfficina: software de gestão para oficinas mecânicas que atendem clientes exigentes. Recepção pela placa, agenda por elevador, orçamento que vira ordem de serviço, IA no diagnóstico, financeiro e tributário integrados. Licença definitiva — você compra, não aluga.">
+<meta property="og:title" content="aOfficina — Gestão à altura dos carros que você atende">
+<meta property="og:description" content="Software de gestão para oficinas de alto padrão. Licença definitiva, hospedagem inclusa no início, migração para o seu servidor quando quiser.">
+<meta property="og:image" content="https://aofficina.com.br/img/logo-prata.png">
 <link rel="icon" href="/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root { --cobre:#B87333; --grafite:#1B1B1F; }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:#1F2328; background:#fff; }
-  header { background: radial-gradient(ellipse at 20% 10%, #2e2a27 0%, var(--grafite) 55%, #0f0f11 100%); color:#fff; padding: 56px 20px 72px; text-align:center; }
-  header img { max-width: 420px; width: 80%; }
-  header h1 { font-size: clamp(1.5rem, 3.5vw, 2.4rem); margin: 28px auto 12px; max-width: 760px; font-weight: 600; }
-  header p { color:#C9CCD1; max-width: 640px; margin: 0 auto 28px; font-size: 1.1rem; }
-  .btn { display:inline-block; background: var(--cobre); color:#fff; text-decoration:none; padding: 14px 28px; border-radius: 10px; font-weight: 600; }
-  section { max-width: 1040px; margin: 0 auto; padding: 56px 20px; }
-  h2 { text-align:center; font-size: 1.8rem; margin-bottom: 36px; }
-  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-  .card { border:1px solid #e8e8ec; border-radius: 14px; padding: 22px; border-top: 4px solid var(--cobre); }
-  .card h3 { margin: 0 0 8px; font-size: 1.1rem; }
-  .card p { margin:0; color:#555; line-height:1.5; }
-  .faixa { background:#F3F4F6; }
-  footer { background: var(--grafite); color:#C9CCD1; text-align:center; padding: 24px 20px; font-size:.9rem; }
-  footer img { height: 36px; vertical-align: middle; margin-right: 10px; }
-  footer .marca { color:#E9B865; font-weight:600; letter-spacing:.04em; }
+:root{
+  --n950:#040C14; --n900:#061420; --n800:#0A1F30; --n700:#10304A; --n600:#17405F;
+  --aqua:#3FD2C7; --aqua-2:#8FE3DC; --aqua-dim:rgba(63,210,199,.14);
+  --ink:#E9F0F4; --ink-2:#C5D3DC; --muted:#8FA6B5; --line:rgba(143,227,220,.16);
+  --font-d:"Cormorant Garamond",Georgia,serif; --font-b:"Manrope",system-ui,sans-serif;
+  --max:1180px;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:var(--n900);color:var(--ink);font-family:var(--font-b);font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+h1,h2,h3{font-family:var(--font-d);font-weight:600;letter-spacing:.005em;margin:0;line-height:1.08}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 24px}
+.eyebrow{font-family:var(--font-b);font-size:.74rem;letter-spacing:.28em;text-transform:uppercase;color:var(--aqua);font-weight:600}
+.lead{color:var(--ink-2);font-size:1.12rem;max-width:62ch;font-weight:300}
+.btn{display:inline-flex;align-items:center;gap:.6rem;padding:.95rem 1.6rem;border-radius:999px;font-weight:600;font-size:.95rem;letter-spacing:.02em;transition:transform .25s,box-shadow .25s,background .25s;border:1px solid transparent}
+.btn-aqua{background:linear-gradient(135deg,var(--aqua),#2BB3A8);color:var(--n950);box-shadow:0 10px 30px -12px rgba(63,210,199,.65)}
+.btn-aqua:hover{transform:translateY(-2px);box-shadow:0 18px 40px -14px rgba(63,210,199,.8)}
+.btn-ghost{border-color:var(--line);color:var(--ink);background:rgba(255,255,255,.03);backdrop-filter:blur(6px)}
+.btn-ghost:hover{border-color:var(--aqua);background:var(--aqua-dim)}
+.hair{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+
+/* nav */
+.nav{position:fixed;inset:0 0 auto 0;z-index:50;transition:background .35s,backdrop-filter .35s,border-color .35s;border-bottom:1px solid transparent}
+.nav.on{background:rgba(6,20,32,.78);backdrop-filter:blur(14px);border-color:var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:76px}
+.nav img{height:34px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
+.nav ul{display:flex;gap:2rem;list-style:none;margin:0;padding:0;font-size:.86rem;font-weight:500;color:var(--ink-2)}
+.nav ul a:hover{color:var(--aqua)}
+@media(max-width:900px){.nav ul{display:none}}
+
+/* hero */
+.hero{position:relative;min-height:100vh;display:grid;align-items:center;overflow:hidden;isolation:isolate}
+.hero .photo{position:absolute;inset:0;z-index:-2;background:var(--n950)}
+.hero .photo img{width:100%;height:100%;object-fit:cover;object-position:70% 50%;opacity:0;transition:opacity 1.6s ease}
+.hero .photo img.ok{opacity:.78}
+.hero .veil{position:absolute;inset:0;z-index:-1;background:
+  radial-gradient(60% 80% at 15% 40%,rgba(6,20,32,.92) 0%,rgba(6,20,32,.78) 45%,rgba(6,20,32,.25) 100%),
+  linear-gradient(180deg,rgba(6,20,32,.55) 0%,rgba(6,20,32,.15) 50%,var(--n900) 100%)}
+.hero .glow{position:absolute;z-index:-1;width:60vw;height:60vw;max-width:900px;max-height:900px;border-radius:50%;filter:blur(90px);opacity:.28;background:radial-gradient(circle,var(--aqua) 0%,transparent 60%);right:-15vw;bottom:-20vw;pointer-events:none}
+.hero .wrap{padding-top:140px;padding-bottom:110px}
+.hero .logo{width:min(560px,80vw);filter:drop-shadow(0 12px 40px rgba(0,0,0,.55))}
+.hero h1{font-size:clamp(2.4rem,5.2vw,4.6rem);margin:2.2rem 0 1.2rem;max-width:16ch}
+.hero h1 em{font-style:italic;color:var(--aqua-2)}
+.hero .cta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:2.2rem}
+.hero .scroll{position:absolute;left:50%;bottom:28px;transform:translateX(-50%);color:var(--muted);font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:.5rem}
+.hero .scroll i{width:1px;height:48px;background:linear-gradient(var(--aqua),transparent);animation:drop 2.2s infinite}
+@keyframes drop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* strip */
+.strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:rgba(10,31,48,.55);backdrop-filter:blur(8px)}
+.strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;padding:1.6rem 24px}
+.strip b{display:block;font-family:var(--font-d);font-size:1.7rem;font-weight:600;color:var(--aqua-2)}
+.strip span{font-size:.82rem;color:var(--muted);letter-spacing:.04em}
+@media(max-width:800px){.strip .wrap{grid-template-columns:repeat(2,1fr)}}
+
+/* sections */
+section{padding:110px 0}
+.head{max-width:760px;margin-bottom:3.4rem}
+.head h2{font-size:clamp(2rem,3.6vw,3.1rem);margin:.8rem 0 1rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+@media(max-width:900px){.grid3{grid-template-columns:1fr}}
+.card{position:relative;padding:2rem 1.8rem;border:1px solid var(--line);border-radius:18px;background:linear-gradient(160deg,rgba(23,64,95,.35),rgba(10,31,48,.35));overflow:hidden;transition:transform .35s,border-color .35s}
+.card:hover{transform:translateY(-4px);border-color:rgba(63,210,199,.45)}
+.card::after{content:"";position:absolute;inset:auto -40% -60% auto;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(63,210,199,.22),transparent 65%);pointer-events:none}
+.card .ic{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;background:var(--aqua-dim);border:1px solid var(--line);margin-bottom:1.3rem}
+.card .ic svg{width:22px;height:22px;stroke:var(--aqua);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.card h3{font-size:1.5rem;margin-bottom:.5rem}
+.card p{margin:0;color:var(--ink-2);font-size:.96rem}
+
+/* módulos */
+.mod{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;padding:4.5rem 0;border-top:1px solid var(--line)}
+.mod:first-of-type{border-top:0;padding-top:0}
+.mod.inv .txt{order:2}
+.mod h3{font-size:clamp(1.7rem,2.8vw,2.4rem);margin:.6rem 0 .9rem}
+.mod .prob{color:var(--muted);font-style:italic;font-family:var(--font-d);font-size:1.25rem;margin:0 0 .9rem}
+.mod p{color:var(--ink-2);margin:0 0 .8rem}
+.mod .wa{display:inline-flex;align-items:center;gap:.5rem;margin-top:.8rem;color:var(--aqua);font-weight:600;font-size:.9rem}
+.mod .wa:hover{text-decoration:underline}
+.panel{border-radius:18px;border:1px solid var(--line);background:linear-gradient(170deg,#0d2238,#081829);padding:1.4rem;box-shadow:0 40px 80px -40px rgba(0,0,0,.8)}
+.panel .l{display:flex;justify-content:space-between;gap:1rem;padding:.65rem 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:.92rem;color:var(--ink-2)}
+.panel .l:last-child{border-bottom:0}
+.panel .l b{color:var(--ink);font-weight:600}
+.panel .tot{margin-top:.6rem;padding-top:.8rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:var(--font-d);font-size:1.5rem;color:var(--aqua-2)}
+.panel .tag{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem}
+.panel .nf{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:.6rem}
+.panel .nf div{border:1px solid var(--line);border-radius:12px;padding:.8rem;font-size:.85rem;color:var(--ink-2)}
+.panel .nf b{display:block;color:var(--aqua-2);font-size:1.05rem;margin-bottom:.2rem}
+@media(max-width:900px){.mod{grid-template-columns:1fr;gap:2rem}.mod.inv .txt{order:0}}
+
+/* flow */
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:0;position:relative;counter-reset:f}
+.flow::before{content:"";position:absolute;left:4%;right:4%;top:26px;height:1px;background:linear-gradient(90deg,transparent,var(--aqua),transparent);opacity:.5}
+.flow div{position:relative;padding:0 .9rem;text-align:center}
+.flow div::before{counter-increment:f;content:counter(f,decimal-leading-zero);display:grid;place-items:center;width:52px;height:52px;margin:0 auto 1.1rem;border-radius:50%;background:var(--n900);border:1px solid var(--aqua);color:var(--aqua);font-family:var(--font-d);font-size:1.25rem;font-weight:600;position:relative;z-index:1}
+.flow b{display:block;font-weight:600;font-size:.98rem;margin-bottom:.3rem}
+.flow span{font-size:.84rem;color:var(--muted)}
+@media(max-width:900px){.flow{grid-template-columns:repeat(2,1fr);row-gap:2.2rem}.flow::before{display:none}}
+
+/* screens */
+.screens{display:grid;grid-template-columns:1.25fr 1fr;gap:1.4rem;align-items:start}
+.frame{border-radius:14px;border:1px solid var(--line);background:#0b1826;box-shadow:0 40px 80px -40px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.02) inset;overflow:hidden;transition:transform .5s}
+.frame:hover{transform:translateY(-6px)}
+.frame .bar{height:34px;display:flex;align-items:center;gap:6px;padding:0 14px;border-bottom:1px solid var(--line);background:#0e1f31}
+.frame .bar i{width:10px;height:10px;border-radius:50%;background:#1f3b55}.frame .bar i:first-child{background:#2BB3A8}
+.frame figcaption{padding:.9rem 1.1rem;font-size:.86rem;color:var(--muted);border-top:1px solid var(--line)}
+.screens .col{display:grid;gap:1.4rem}
+@media(max-width:900px){.screens{grid-template-columns:1fr}}
+
+/* IA */
+.ia{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+.chat{border-radius:18px;border:1px solid var(--line);background:linear-gradient(170deg,#0d2238,#081829);padding:1.4rem;box-shadow:0 40px 80px -40px rgba(0,0,0,.8)}
+.chat .m{max-width:92%;padding:.85rem 1rem;border-radius:14px;font-size:.9rem;line-height:1.5;margin-bottom:.8rem}
+.chat .u{background:var(--aqua-dim);border:1px solid var(--line);margin-left:auto;border-bottom-right-radius:4px}
+.chat .a{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-bottom-left-radius:4px;color:var(--ink-2)}
+.chat .a b{color:var(--aqua-2);font-weight:600}
+.chat .tag{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+.chat ol{margin:.3rem 0 0 1.1rem;padding:0}.chat li{margin:.25rem 0}
+.ia ul.ticks{list-style:none;padding:0;margin:1.6rem 0 0}
+.ia ul.ticks li{padding-left:2rem;position:relative;margin:.75rem 0;color:var(--ink-2)}
+.ia ul.ticks li::before{content:"";position:absolute;left:0;top:.55em;width:18px;height:1px;background:var(--aqua)}
+@media(max-width:900px){.ia{grid-template-columns:1fr}}
+
+/* fin */
+.fin{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+.fin .card{padding:2.4rem}
+.pill{display:inline-block;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;padding:.35rem .75rem;border-radius:999px;border:1px solid var(--line);color:var(--aqua-2);background:var(--aqua-dim);margin-bottom:1.1rem;font-weight:600}
+.pill.soon{color:var(--muted);background:rgba(255,255,255,.03)}
+.fin ul{margin:1rem 0 0;padding-left:1.1rem;color:var(--ink-2);font-size:.95rem}
+.fin li{margin:.35rem 0}
+@media(max-width:900px){.fin{grid-template-columns:1fr}}
+
+/* band photo */
+.band{position:relative;height:62vh;min-height:420px;overflow:hidden;isolation:isolate;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.band img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 60%;opacity:0;transition:opacity 1.4s;z-index:-2;transform:scale(1.04)}
+.band img.ok{opacity:.7}
+.band .veil{position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(6,20,32,.92),rgba(6,20,32,.45) 55%,rgba(6,20,32,.85))}
+.band .wrap{height:100%;display:grid;align-items:center}
+.band blockquote{margin:0;max-width:30ch;font-family:var(--font-d);font-size:clamp(1.7rem,3.2vw,2.8rem);font-weight:500;line-height:1.2}
+.band blockquote em{color:var(--aqua-2)}
+.band cite{display:block;margin-top:1rem;font-style:normal;font-family:var(--font-b);font-size:.82rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+
+/* licença */
+.lic{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;counter-reset:l}
+.lic div{padding:2rem 1.6rem;border-left:1px solid var(--line)}
+.lic div::before{counter-increment:l;content:"0" counter(l);font-family:var(--font-d);font-size:2.6rem;color:var(--aqua);display:block;line-height:1;margin-bottom:1rem;font-weight:600}
+.lic h3{font-size:1.4rem;margin-bottom:.5rem}.lic p{margin:0;color:var(--ink-2);font-size:.95rem}
+@media(max-width:900px){.lic{grid-template-columns:1fr}}
+
+/* faq */
+details{border-top:1px solid var(--line);padding:1.2rem 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;font-weight:500;font-size:1.05rem}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--font-d);font-size:1.8rem;color:var(--aqua);transition:transform .3s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{margin:.8rem 0 0;color:var(--ink-2);max-width:70ch}
+
+/* contato */
+.contato{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+form{display:grid;gap:.9rem}
+label{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+input,select{width:100%;padding:.9rem 1rem;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);font:inherit;font-size:1rem}
+input:focus,select:focus{outline:none;border-color:var(--aqua);box-shadow:0 0 0 3px var(--aqua-dim)}
+select option{background:var(--n800)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+@media(max-width:900px){.contato{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:3.5rem 0 2.5rem;background:var(--n950)}
+footer .wrap{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:2.5rem;align-items:start}
+.ia-brand{display:flex;align-items:center;gap:1rem}
+.ia-brand img{height:56px;border-radius:8px;box-shadow:0 10px 30px -14px #d9a441}
+.ia-brand b{display:block;font-size:1rem;letter-spacing:.14em;color:#E9B865;font-weight:700}
+.ia-brand span{font-family:var(--font-d);font-style:italic;font-size:1.15rem;color:var(--ink-2)}
+footer h4{font-family:var(--font-b);font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);margin:0 0 .9rem}
+footer p,footer li{color:var(--ink-2);font-size:.92rem;margin:.25rem 0}
+footer ul{list-style:none;padding:0;margin:0}
+footer .fim{grid-column:1/-1;border-top:1px solid var(--line);padding-top:1.4rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--muted);font-size:.8rem}
+@media(max-width:900px){footer .wrap{grid-template-columns:1fr}}
+
+/* reveal */
+.r{opacity:0;transform:translateY(22px);transition:opacity .9s ease,transform .9s ease}
+.r.in{opacity:1;transform:none}
+.wa-float{position:fixed;right:22px;bottom:22px;z-index:60;width:58px;height:58px;border-radius:50%;background:#25D366;display:grid;place-items:center;box-shadow:0 14px 34px -10px rgba(37,211,102,.7);transition:transform .25s}
+.wa-float:hover{transform:scale(1.07)}
+.wa-float svg{width:30px;height:30px;fill:#fff}
 </style>
 </head>
 <body>
-<header>
-  <img src="/img/aofficina-cobre.png" alt="aOfficina">
-  <h1>Gestão completa para a sua rede de oficinas — da agenda ao recibo</h1>
-  <p>Agenda por oficina, orçamento que vira ordem de serviço, peças e mão de obra no mesmo pedido, estoque e financeiro. Licença definitiva: você compra, não aluga.</p>
-  <a class="btn" href="https://wa.me/5519996085277?text=Quero%20conhecer%20o%20aOfficina">Falar com a gente</a>
+
+<nav class="nav" id="nav"><div class="wrap">
+  <a href="#topo"><img src="/img/logo-prata.png" alt="aOfficina"></a>
+  <ul><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#fluxo">Como funciona</a></li><li><a href="#telas">O sistema</a></li><li><a href="#ia">Inteligência</a></li><li><a href="#financeiro">Financeiro</a></li><li><a href="#licenca">Licença</a></li><li><a href="#faq">Perguntas</a></li></ul>
+  <a class="btn btn-aqua" href="#contato" style="padding:.7rem 1.2rem;font-size:.85rem">Agendar demonstração</a>
+</div></nav>
+
+<header class="hero" id="topo">
+  <div class="photo"><img data-src="/img/carro-1.jpg" data-alt="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=2000&q=80" alt=""></div>
+  <div class="veil"></div><div class="glow"></div>
+  <div class="wrap">
+    <img class="logo r" src="/img/logo-prata.png" alt="aOfficina.com.br">
+    <p class="eyebrow r" style="margin-top:2rem">Software de gestão para oficinas de alto padrão</p>
+    <h1 class="r">Gestão à altura dos <em>carros</em> que entram na sua oficina.</h1>
+    <p class="lead r">Recepção pela placa, agenda por elevador e mecânico, orçamento que vira ordem de serviço com um toque, inteligência artificial no diagnóstico e um financeiro feito para quem cobra o que vale. Licença definitiva: você compra, não aluga.</p>
+    <div class="cta r"><a class="btn btn-aqua" href="#contato">Agendar demonstração</a><a class="btn btn-ghost" href="#telas">Ver o sistema</a></div>
+  </div>
+  <div class="scroll">role<i></i></div>
 </header>
 
-<section>
-  <h2>O que o aOfficina faz</h2>
-  <div class="grid">
-    <div class="card"><h3>Clientes e veículos</h3><p>Vários veículos por cliente, busca pela placa na recepção e catálogo de marcas, modelos e anos dos últimos 20 anos.</p></div>
-    <div class="card"><h3>Agenda por oficina</h3><p>Agenda de cada unidade com mecânicos e elevadores como recursos — sem choque de horário.</p></div>
-    <div class="card"><h3>Orçamento → Pedido</h3><p>Orçamento aprovado vira pedido com um clique. Serviços executados e peças aplicadas no mesmo documento.</p></div>
-    <div class="card"><h3>Mão de obra por hora</h3><p>Tabela de serviços com valor/hora e tempo previsto; o sistema calcula o preço e a previsão de entrega.</p></div>
-    <div class="card"><h3>Peças e estoque</h3><p>Cadastro de peças com código do fabricante, aplicação, lotes com validade e alerta de estoque mínimo.</p></div>
-    <div class="card"><h3>Financeiro e fiscal</h3><p>Contas a receber e a pagar, boletos, PIX e nota fiscal de serviço integrados ao pedido.</p></div>
+<div class="strip"><div class="wrap">
+  <div class="r"><b>1 pedido</b><span>peças e mão de obra no mesmo documento</span></div>
+  <div class="r"><b>Por elevador</b><span>agenda com mecânico e box como recursos</span></div>
+  <div class="r"><b>IA</b><span>diagnóstico ditado, escrito à mão ou pesquisado</span></div>
+  <div class="r"><b>Definitiva</b><span>licença sua, dados seus, servidor seu quando quiser</span></div>
+</div></div>
+
+<section id="diferenciais"><div class="wrap">
+  <div class="head r"><p class="eyebrow">Módulos</p><h2>Cada módulo resolve uma dor que você conhece pelo nome.</h2><p class="lead">Não é um sistema genérico adaptado para oficina. Cada tela nasceu de uma situação do balcão, do box ou do caixa.</p></div>
+
+  <div class="mod r" id="m-recepcao">
+    <div class="txt"><p class="eyebrow">Recepção pela placa</p><h3>O cliente chega e a recepção já sabe quem ele é.</h3>
+      <p class="prob">"Qual é mesmo o seu CPF? O carro é o Gol ou a Hilux? Quando foi a última troca de óleo?"</p>
+      <p>Digita a placa: cliente, veículo, histórico de serviços e quilometragem na tela em um segundo. Um cliente, vários carros. Catálogo de marcas, modelos e anos dos últimos 20 anos para cadastrar um veículo novo sem digitar nome de modelo errado.</p>
+      <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20a%20recep%C3%A7%C3%A3o%20pela%20placa%20do%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
+    <figure class="frame" style="margin:0"><div class="bar"><i></i><i></i><i></i></div><img src="/img/tela-clientes.png" alt="Clientes e veículos" loading="lazy"></figure>
   </div>
-</section>
 
-<section class="faixa">
-  <h2>Compra, não aluguel</h2>
-  <p style="text-align:center;max-width:720px;margin:0 auto;color:#444;line-height:1.6">Licença definitiva por oficina. Começa hospedado por nós, pronto para usar; quando quiser, migra para o seu próprio servidor com os seus dados. Sem mensalidade escondida.</p>
-</section>
+  <div class="mod inv r" id="m-agenda">
+    <div class="txt"><p class="eyebrow">Agenda por elevador e mecânico</p><h3>Dois carros marcados para o mesmo elevador: nunca mais.</h3>
+      <p class="prob">"Marquei para as 9h, mas o elevador 2 ainda está com o carro de ontem."</p>
+      <p>A agenda de cada oficina tem uma coluna por mecânico e por elevador. O sistema recusa a sobreposição na hora de marcar, mostra a linha do horário atual e abre o orçamento com um clique a partir do agendamento. Guincho entra com prioridade.</p>
+      <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20a%20agenda%20do%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
+    <figure class="frame" style="margin:0"><div class="bar"><i></i><i></i><i></i></div><img src="/img/tela-agenda.png" alt="Agenda por oficina" loading="lazy"></figure>
+  </div>
 
-<footer>
-  <img src="/img/iaprocess-badge.png" alt="IA Process Automation">
-  <span class="marca">IA PROCESS AUTOMATION</span> · Fernando Manesco · Rio Claro/SP · aofficina.com.br
-</footer>
+  <div class="mod r" id="m-pedido">
+    <div class="txt"><p class="eyebrow">Orçamento → Ordem de serviço</p><h3>Peças e mão de obra no mesmo documento, autorizadas item a item.</h3>
+      <p class="prob">"O cliente aprovou o freio mas não a suspensão — e agora a OS está com tudo misturado."</p>
+      <p>O orçamento lista serviços e peças; o cliente autoriza o que quer. Aprovado, vira pedido numerado sem redigitar nada. O mecânico registra o que executou no tablet; o pedido só pode ser concluído quando tudo o que foi autorizado foi feito. Totais sempre recalculados pelo servidor — sem conta errada no caixa.</p>
+      <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20or%C3%A7amento%20e%20ordem%20de%20servi%C3%A7o%20no%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
+    <figure class="frame" style="margin:0"><div class="bar"><i></i><i></i><i></i></div><img src="/img/tela-pedido.png" alt="Pedido" loading="lazy"></figure>
+  </div>
+
+  <div class="mod inv r" id="m-mao">
+    <div class="txt"><p class="eyebrow">Mão de obra por hora</p><h3>Cobre o tempo do seu mecânico pelo que ele vale.</h3>
+      <p class="prob">"Cada orçamento sai com um preço diferente para o mesmo serviço, dependendo de quem atendeu."</p>
+      <p>Tabela de serviços com valor/hora e tempo previsto por procedimento. O preço e a previsão de entrega saem calculados; quando a negociação pede, o valor fechado continua possível, item a item. Padroniza a oficina sem engessar o atendimento.</p>
+      <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20m%C3%A3o%20de%20obra%20por%20hora%20no%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
+    <div class="panel"><div class="tag">exemplo · tabela de mão de obra</div>
+      <div class="l"><span>Troca de pastilhas dianteiras</span><b>1h30 × R$ 150 = R$ 225,00</b></div>
+      <div class="l"><span>Alinhamento e balanceamento</span><b>45 min × R$ 120 = R$ 90,00</b></div>
+      <div class="l"><span>Diagnóstico eletrônico</span><b>valor fechado · R$ 180,00</b></div>
+      <div class="tot"><span>Previsão de entrega</span><span>hoje, 16h30</span></div></div>
+  </div>
+
+  <div class="mod r" id="m-nfse">
+    <div class="txt"><p class="eyebrow">Nota fiscal e reforma tributária</p><h3>NFS-e pronta para a reforma tributária, emitida do próprio pedido.</h3>
+      <p class="prob">"Fecho o pedido aqui e depois digito tudo de novo no site da prefeitura."</p>
+      <p>A nota de serviço sai do pedido fechado, com cliente, veículo e valores já preenchidos, no padrão nacional da NFS-e e com os campos da reforma tributária (IBS/CBS) previstos desde o projeto. Certificado digital guardado em cofre criptografado; relatórios prontos para o escritório de contabilidade. Módulo WebTributário da IA Process Automation — em integração.</p>
+      <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20nota%20fiscal%20e%20reforma%20tribut%C3%A1ria%20no%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
+    <div class="panel"><div class="tag">do pedido à nota</div>
+      <div class="nf"><div><b>NFS-e</b>serviço · padrão nacional</div><div><b>NF-e</b>peças · por item</div><div><b>IBS / CBS</b>campos da reforma previstos</div><div><b>A1 em cofre</b>certificado protegido</div></div></div>
+  </div>
+</div></section>
+
+<section id="fluxo" style="padding-top:0"><div class="wrap">
+  <div class="head r"><p class="eyebrow">Como funciona</p><h2>Da chegada à entrega, sem papel.</h2></div>
+  <div class="flow">
+    <div class="r"><b>Chegada</b><span>placa → cliente e veículo na tela; guincho tem prioridade</span></div>
+    <div class="r"><b>Agenda</b><span>mecânico e elevador reservados sem conflito</span></div>
+    <div class="r"><b>Diagnóstico</b><span>ditado, escrito à mão ou digitado; IA pesquisa causas</span></div>
+    <div class="r"><b>Orçamento</b><span>peças + mão de obra; cliente autoriza item a item</span></div>
+    <div class="r"><b>Execução</b><span>mecânico registra o que fez, no tablet</span></div>
+    <div class="r"><b>Entrega</b><span>pedido fechado, pagamento, nota fiscal</span></div>
+  </div>
+</div></section>
+
+<section id="telas" style="background:linear-gradient(180deg,var(--n900),var(--n800) 50%,var(--n900))"><div class="wrap">
+  <div class="head r"><p class="eyebrow">O sistema</p><h2>Sóbrio na tela, rápido no balcão.</h2><p class="lead">Funciona no computador da recepção e no tablet do mecânico, pelo navegador, sem instalar nada nas máquinas.</p></div>
+  <div class="screens">
+    <figure class="frame r" style="margin:0"><div class="bar"><i></i><i></i><i></i></div><img src="/img/tela-pedido.png" alt="Tela do pedido no aOfficina"><figcaption>Pedido: cliente, veículo, diagnóstico com IA, serviços executados e peças — totais calculados no servidor.</figcaption></figure>
+    <div class="col">
+      <figure class="frame r" style="margin:0"><div class="bar"><i></i><i></i><i></i></div><img src="/img/tela-agenda.png" alt="Agenda por oficina"><figcaption>Agenda do dia: uma coluna por mecânico e por elevador.</figcaption></figure>
+      <figure class="frame r" style="margin:0"><div class="bar"><i></i><i></i><i></i></div><img src="/img/tela-clientes.png" alt="Clientes e veículos"><figcaption>Clientes com vários veículos; busca por nome, CPF ou placa.</figcaption></figure>
+    </div>
+  </div>
+</div></section>
+
+<section id="ia"><div class="wrap ia">
+  <div class="r">
+    <p class="eyebrow">Inteligência artificial</p>
+    <h2 style="font-size:clamp(2rem,3.4vw,3rem);margin:.8rem 0 1rem">O mecânico fala. O sistema escreve bonito.</h2>
+    <p class="lead">Três botões ao lado de cada campo: <b>ditar</b>, <b>escrever com a caneta</b> no tablet e <b>corrigir</b>. O texto chega ao cliente em linguagem profissional, sem tirar o mecânico do carro.</p>
+    <ul class="ticks">
+      <li><b>Pesquisa de problema</b>: sintoma + veículo + km → causas prováveis em ordem, como verificar, peças envolvidas.</li>
+      <li><b>Código de peça</b>: nome técnico, variantes (lado, motorização, ano de corte), fabricantes de referência — sempre para confirmar com o fornecedor.</li>
+      <li><b>Correção de texto</b>: a IA sugere; a pessoa compara original e sugestão e decide. Nada é alterado sem aceite.</li>
+      <li>Regras do assistente em um arquivo editável pela própria oficina — sem reiniciar nada.</li>
+    </ul>
+    <p style="margin-top:1.4rem"><a class="btn btn-ghost" href="https://wa.me/5519996085277?text=Quero%20ver%20a%20IA%20do%20aOfficina%20funcionando" target="_blank" rel="noopener">Ver a IA funcionando</a></p>
+  </div>
+  <div class="chat r">
+    <div class="tag">exemplo ilustrativo · pesquisa de problema</div>
+    <div class="m u">BMW 320i 2019, 48.000 km. Vibração no volante acima de 100 km/h, some ao frear.</div>
+    <div class="m a"><b>Causas prováveis, em ordem</b><ol><li><b>Balanceamento das rodas dianteiras</b> — verificar primeiro; teste barato.</li><li><b>Pneu com deformação</b> (run-flat) — inspecionar banda e flancos.</li><li><b>Roda empenada</b> — comum após buraco; medir no balanceador.</li><li>Folga em terminal/bieleta — checar com o carro suspenso.</li></ol>Como some ao frear, discos empenados são improváveis. <b>Segurança:</b> evitar alta velocidade até avaliar.</div>
+    <div class="tag" style="margin:1rem 0 0">resposta gerada por ia · confirmar no veículo</div>
+  </div>
+</div></section>
+
+<section id="financeiro" style="padding-top:0"><div class="wrap">
+  <div class="head r"><p class="eyebrow">Financeiro</p><h2>O dinheiro dentro do mesmo pedido.</h2><p class="lead">O aOfficina nasce preparado para receber os módulos financeiro e tributário da IA Process Automation — os mesmos motores que já operam pagamentos reais por PIX e emissão de notas fiscais em outras empresas do grupo.</p></div>
+  <div class="fin">
+    <article class="card r"><span class="pill">Em integração · WebFinanceiro</span><h3>Receber, pagar e conciliar</h3><p style="color:var(--ink-2);margin:0">Pagamento no fechamento do pedido por PIX, cartão à vista ou parcelado e dinheiro; contas a receber e a pagar; boletos; conciliação bancária; caixa diário por oficina.</p>
+      <ul><li>PIX com integração bancária direta e dupla aprovação para pagamentos</li><li>Boletos registrados com baixa automática</li><li>Fluxo de caixa −12/+12 meses por unidade</li><li>Trilha de auditoria imutável — nada se apaga, tudo se rastreia</li></ul></article>
+    <article class="card r"><span class="pill soon">Em integração · WebTributário</span><h3>Nota fiscal e obrigações</h3><p style="color:var(--ink-2);margin:0">Emissão de NFS-e no padrão nacional e de NF-e para peças, a partir do pedido fechado, com os dados do cliente e do veículo já preenchidos.</p>
+      <ul><li>NFS-e (serviço) e NF-e (peças) em um clique</li><li>Preparado para a transição da reforma tributária (IBS/CBS)</li><li>Relatórios para o escritório de contabilidade</li><li>Certificado digital A1 guardado em cofre criptografado</li></ul></article>
+  </div>
+  <p class="r" style="margin-top:1.6rem"><a class="btn btn-ghost" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20financeiro%20e%20fiscal%20no%20aOfficina" target="_blank" rel="noopener">Perguntar sobre financeiro e fiscal</a></p>
+</div></section>
+
+<div class="band">
+  <img data-src="/img/carro-2.jpg" data-alt="https://images.unsplash.com/photo-1553440569-bcc63803a83d?auto=format&fit=crop&w=2000&q=80" alt="">
+  <div class="veil"></div>
+  <div class="wrap"><blockquote class="r">Quem confia um carro assim à sua oficina espera o mesmo cuidado no <em>orçamento</em>, na <em>agenda</em> e na <em>nota</em>.<cite>aOfficina · gestão para oficinas de alto padrão</cite></blockquote></div>
+</div>
+
+<section id="licenca"><div class="wrap">
+  <div class="head r"><p class="eyebrow">Licença</p><h2>Você compra. Não aluga.</h2><p class="lead">Sem mensalidade que sobe todo ano, sem perder o acesso aos seus dados se decidir sair. A licença é definitiva, por oficina.</p></div>
+  <div class="lic">
+    <div class="r"><h3>Licença definitiva</h3><p>Paga uma vez, por oficina, usa para sempre. Inclui instalação, configuração inicial, importação dos cadastros e treinamento da equipe. Condições de atualização e suporte vêm detalhadas na proposta. Valor sob consulta.</p></div>
+    <div class="r"><h3>Começa hospedado por nós</h3><p>No primeiro dia o sistema já está no ar, em servidor nosso, com endereço próprio da sua oficina, cópias de segurança diárias e certificado HTTPS.</p></div>
+    <div class="r"><h3>Migra para o seu servidor</h3><p>Quando quiser, levamos o sistema e o banco de dados para um servidor seu. Roda sem depender de internet para as telas — só a IA e o fiscal precisam de conexão.</p></div>
+  </div>
+  <p class="r" style="margin-top:2rem"><a class="btn btn-aqua" href="https://wa.me/5519996085277?text=Quero%20uma%20proposta%20do%20aOfficina" target="_blank" rel="noopener">Pedir proposta</a></p>
+</div></section>
+
+<section id="faq" style="padding-top:0"><div class="wrap" style="max-width:860px">
+  <div class="head r"><p class="eyebrow">Perguntas frequentes</p><h2>O que todo dono de oficina pergunta.</h2></div>
+  <details class="r"><summary>Funciona no tablet do mecânico?</summary><p>Sim — em qualquer dispositivo com navegador: tablet, celular, notebook ou o computador da recepção, sem instalar nada. O ditado por voz funciona no Chrome, Edge e Safari sem instalar nada; a escrita com caneta usa reconhecimento de letra cursiva em português.</p></details>
+  <details class="r"><summary>Preciso de internet?</summary><p>Hospedado por nós, sim, como qualquer sistema online. No seu servidor, as telas e o banco funcionam na rede local; só a inteligência artificial, a nota fiscal e o PIX precisam de conexão.</p></details>
+  <details class="r"><summary>Tenho mais de uma oficina.</summary><p>O sistema é multi-oficina desde a primeira versão: cada unidade tem sua agenda, seus elevadores e sua equipe; o dono vê tudo. A licença é por oficina.</p></details>
+  <details class="r"><summary>Onde ficam os meus dados?</summary><p>Na nuvem, em banco de dados exclusivo da sua empresa (nunca misturado com outros clientes), com cópia de segurança diária e acesso por credenciais individuais. Se um dia quiser, migram inteiros para um servidor seu. Tratamos dados pessoais conforme a LGPD, com encarregado nomeado.</p></details>
+  <details class="r"><summary>Já uso outro sistema. Dá para importar?</summary><p>Clientes, veículos, peças e serviços podem ser importados de planilhas. Histórico de ordens de serviço é avaliado caso a caso.</p></details>
+  <details class="r"><summary>Quanto custa?</summary><p>Depende do número de oficinas e dos módulos. A proposta é feita após uma conversa de 20 minutos sobre a sua operação — sem compromisso.</p></details>
+</div></section>
+
+<section id="contato" style="background:linear-gradient(180deg,var(--n900),var(--n800))"><div class="wrap contato">
+  <div class="r">
+    <p class="eyebrow">Demonstração</p>
+    <h2 style="font-size:clamp(2rem,3.4vw,3rem);margin:.8rem 0 1rem">Vamos ver o aOfficina rodando com os seus carros.</h2>
+    <p class="lead">Preencha ao lado e a conversa abre direto no WhatsApp. Ou chame agora:</p>
+    <p style="margin-top:1.4rem"><a class="btn btn-ghost" href="https://wa.me/5519996085277?text=Quero%20conhecer%20o%20aOfficina" target="_blank" rel="noopener">WhatsApp (19) 99608-5277</a></p>
+    <p style="color:var(--muted);font-size:.9rem;margin-top:1.4rem">IA Process Automation · Rio Claro/SP · atendemos todo o Brasil remotamente e presencialmente no interior de São Paulo.</p>
+  </div>
+  <form class="r" id="fContato" onsubmit="return enviar(event)">
+    <div><label>Seu nome</label><input id="c_nome" required maxlength="80"></div>
+    <div class="row2"><div><label>Oficina</label><input id="c_oficina" required maxlength="80"></div><div><label>Cidade / UF</label><input id="c_cidade" maxlength="60"></div></div>
+    <div class="row2"><div><label>WhatsApp</label><input id="c_fone" inputmode="tel" maxlength="20"></div><div><label>Quantas oficinas</label><select id="c_qtd"><option>1</option><option>2 a 3</option><option>4 ou mais</option></select></div></div>
+    <div><label>O que mais pesa hoje</label><select id="c_dor"><option>Orçamento e ordem de serviço</option><option>Agenda e elevadores ociosos</option><option>Financeiro e cobrança</option><option>Nota fiscal e impostos</option><option>Controle de peças</option><option>Tudo isso</option></select></div>
+    <button class="btn btn-aqua" type="submit" style="justify-content:center;margin-top:.4rem">Abrir conversa no WhatsApp</button>
+    <p style="margin:0;color:var(--muted);font-size:.78rem">Seus dados vão só para a conversa no WhatsApp; nada é armazenado neste site.</p>
+  </form>
+</div></section>
+
+<footer><div class="wrap">
+  <div>
+    <img src="/img/logo-prata.png" alt="aOfficina" style="height:40px;width:auto;margin-bottom:1.4rem">
+    <div class="ia-brand"><img src="/img/iaprocess-badge.png" alt="IA Process Automation"><div><b>IA PROCESS AUTOMATION</b><span>Fernando Manesco</span></div></div>
+    <p style="margin-top:1.2rem;max-width:40ch;color:var(--muted);font-size:.86rem">Software de gestão e automação com inteligência artificial para empresas de serviço. Criadores do aOfficina, WebHomeCare, WebFinanceiro e webNfe.</p>
+  </div>
+  <div><h4>aOfficina</h4><ul><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#telas">O sistema</a></li><li><a href="#ia">Inteligência artificial</a></li><li><a href="#financeiro">Financeiro e tributário</a></li><li><a href="#licenca">Licença</a></li></ul></div>
+  <div><h4>Contato</h4><ul><li><a href="https://wa.me/5519996085277" target="_blank" rel="noopener">WhatsApp (19) 99608-5277</a></li><li>Rio Claro · São Paulo · Brasil</li><li><a href="/privacidade.html">Política de privacidade</a></li></ul></div>
+  <div class="fim"><span>© <span id="ano"></span> IA Process Automation · aofficina.com.br</span><span>Fotos ilustrativas. Marcas de veículos citadas pertencem aos seus fabricantes.</span></div>
+</div></footer>
+
+<a class="wa-float" href="https://wa.me/5519996085277?text=Quero%20conhecer%20o%20aOfficina" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 32 32"><path d="M16 3C9.4 3 4 8.3 4 14.9c0 2.6.8 5 2.3 7L4 29l7.3-2.3c2 1.1 4.2 1.6 6.5 1.6 6.6 0 12-5.3 12-11.9S22.6 3 16 3zm0 21.7c-2 0-4-.6-5.7-1.6l-.4-.2-4.3 1.4 1.4-4.2-.3-.4a9.7 9.7 0 01-1.8-5.7c0-5.4 4.5-9.8 10.1-9.8s10.1 4.4 10.1 9.8-4.5 9.7-10.1 9.7zm5.6-7.3c-.3-.2-1.8-.9-2.1-1-.3-.1-.5-.2-.7.2s-.8 1-1 1.2c-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.5-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6l.5-.5.3-.5v-.5l-1-2.3c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1-1.1 2.5s1.1 2.9 1.3 3.1c.2.2 2.2 3.3 5.3 4.6 2.6 1 3.1.8 3.7.8.6-.1 1.8-.7 2.1-1.4.3-.7.3-1.3.2-1.4l-.6-.3z"/></svg></a>
+
+<script>
+  // fotos: local (img/carro-N.jpg) → Unsplash (licença livre, hotlink) → fundo
+  document.querySelectorAll('img[data-src]').forEach(img => {
+    const tentar = (src, prox) => { const t = new Image(); t.onload = () => { img.src = src; img.classList.add('ok'); }; t.onerror = prox || (() => {}); t.src = src; };
+    tentar(img.dataset.src, () => img.dataset.alt && tentar(img.dataset.alt));
+  });
+  // nav sólida ao rolar
+  const nav = document.getElementById('nav'); const onS = () => nav.classList.toggle('on', scrollY > 40); onS(); addEventListener('scroll', onS, { passive: true });
+  // revelar ao entrar na tela
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+  document.querySelectorAll('.r').forEach((el, i) => { el.style.transitionDelay = (i % 6) * 70 + 'ms'; io.observe(el); });
+  document.getElementById('ano').textContent = new Date().getFullYear();
+  function enviar(ev) {
+    ev.preventDefault(); const v = id => document.getElementById(id).value.trim();
+    const txt = `Olá! Quero uma demonstração do aOfficina.\nNome: ${v('c_nome')}\nOficina: ${v('c_oficina')}${v('c_cidade') ? ' — ' + v('c_cidade') : ''}\nWhatsApp: ${v('c_fone')}\nUnidades: ${v('c_qtd')}\nMaior dor hoje: ${v('c_dor')}`;
+    window.open('https://wa.me/5519996085277?text=' + encodeURIComponent(txt), '_blank', 'noopener'); return false;
+  }
+</script>
 </body>
 </html>

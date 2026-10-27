@@ -60,7 +60,7 @@ primeiro no T140, migrável para o servidor do cliente.
 | 3 | Estoque por lote (FIFO, validade, perda, mínimo), baixa no fechamento do pedido | |
 | 4 | Financeiro: contas a receber/pagar, pagamentos (PIX/cartão/dinheiro), boletos (clonar do homecare) | |
 | 5 | NFS-e (padrão nacional; GISS só Rio Claro), recibo/OS em PDF | |
-| 6 | Site de venda completo, instalador para servidor do cliente, atualizador | |
+| 6 | Site de venda (**v1 pronto** — falta foto própria e robô de atendimento inicial no WhatsApp), instalador para servidor do cliente, atualizador | parcial |
 
 ## Repositório
 `FernandoManesco/AOFFICINA.COM.BR` (SSH: `git@github.com:FernandoManesco/AOFFICINA.COM.BR.git`). Todo passo de instalação e toda versão = um commit em uma linha.

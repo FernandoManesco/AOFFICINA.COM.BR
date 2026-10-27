@@ -1,5 +1,10 @@
 # Changelog
 
+## site v1 — 27/10/2026
+- Site de vendas aofficina.com.br: herói com logo, seção por módulo (recepção, agenda, orçamento→OS, mão de obra/hora, NFS-e/reforma), IA, financeiro, licença (sem preço), FAQ, formulário → WhatsApp, privacidade (LGPD).
+- Fotos: slots `site/img/carro-1.jpg` (herói) e `carro-2.jpg` (faixa); sem arquivo local, tenta foto livre do Unsplash; sem internet, fundo marinho.
+- A fazer: robô de atendimento inicial no WhatsApp.
+
 ## v0.3 — 27/10/2026
 - Assistente de IA portado do WebTriagem: botões ✍️🎤✨ em queixa, diagnóstico, observações, serviço executado (pedido), descrição do serviço (mão de obra) e aplicação (peças).
 - Pesquisa por IA no pedido: "Pesquisar problema" (sintoma + veículo + km) e código de peça (lupa ao lado do lançamento de peça).
