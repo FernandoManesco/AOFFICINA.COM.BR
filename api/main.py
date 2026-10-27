@@ -21,7 +21,7 @@ log = logging.getLogger("aofficina")
 dev = config.AMBIENTE == "dev"
 app = FastAPI(
     title="aOfficina API",
-    version="0.3.0",
+    version="0.3.1",
     docs_url="/docs" if dev else None,
     redoc_url=None,
     openapi_url="/openapi.json" if dev else None,
@@ -52,10 +52,33 @@ async def autenticar(request: Request, call_next):
         request.state.user = decodificar_token(cab[7:].strip())
     except Exception as e:  # HTTPException do decodificar_token
         return JSONResponse({"detail": getattr(e, "detail", "Token inválido")}, status_code=401)
-    resp = await call_next(request)
+    try:
+        resp = await call_next(request)
+    except Exception as e:  # erro não tratado: responde JSON (com CORS) em vez de derrubar a conexão
+        return _erro_json(request, e)
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
     return resp
+
+
+def _erro_json(request: Request, e: Exception) -> JSONResponse:
+    """Traduz erros comuns do MySQL em mensagem legível; o resto vira 500 com log."""
+    import pymysql
+    if isinstance(e, pymysql.err.DataError):
+        msg = str(e)
+        if "Data too long" in msg:
+            col = msg.split("'")[1] if "'" in msg else "?"
+            return JSONResponse({"detail": f"Valor muito longo para o campo {col}"}, status_code=400)
+        return JSONResponse({"detail": f"Dado inválido: {msg[:160]}"}, status_code=400)
+    if isinstance(e, pymysql.err.IntegrityError):
+        msg = str(e)
+        if "Duplicate entry" in msg:
+            return JSONResponse({"detail": "Registro duplicado: já existe um cadastro com esse valor"}, status_code=409)
+        if "foreign key" in msg.lower():
+            return JSONResponse({"detail": "Não é possível: o registro está em uso por outro cadastro"}, status_code=409)
+        return JSONResponse({"detail": f"Violação de integridade: {msg[:160]}"}, status_code=409)
+    log.exception("erro não tratado em %s %s", request.method, request.url.path)
+    return JSONResponse({"detail": f"Erro interno: {type(e).__name__}: {str(e)[:160]}"}, status_code=500)
 
 
 @app.get("/")

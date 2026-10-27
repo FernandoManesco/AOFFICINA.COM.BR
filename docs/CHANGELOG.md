@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1 — 27/10/2026
+- Correção: VEICULO.CODIGO_FIPE era VARCHAR(10) e recebia "modelo/ano" (v003 alarga para 24).
+- API: erro não tratado agora responde JSON com CORS (antes o navegador mostrava só "Failed to fetch"); DataError/IntegrityError viram 400/409 legíveis.
+
 ## site v1 — 27/10/2026
 - Site de vendas aofficina.com.br: herói com logo, seção por módulo (recepção, agenda, orçamento→OS, mão de obra/hora, NFS-e/reforma), IA, financeiro, licença (sem preço), FAQ, formulário → WhatsApp, privacidade (LGPD).
 - Fotos: slots `site/img/carro-1.jpg` (herói) e `carro-2.jpg` (faixa); sem arquivo local, tenta foto livre do Unsplash; sem internet, fundo marinho.
