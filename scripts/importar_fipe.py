@@ -99,7 +99,11 @@ def main():
                     con.commit()
                     print(f"  {m['name']}: {len(modelos)} modelos")
                 pend = db.todos(con, "SELECT ID, CODIGO_FIPE, NOME FROM CAT_MODELO WHERE MARCA_ID=%s AND ANOS_OK=0", [marca_id])
-                for md in pend:
+                if pend:
+                    print(f"  {m['name']}: buscando anos de {len(pend)} modelos...", flush=True)
+                for i, md in enumerate(pend, 1):
+                    if i % 25 == 0:
+                        print(f"    {m['name']}: {i}/{len(pend)} (req. usadas: {api.feitas})", flush=True)
                     anos = api.get(f"{recurso}/brands/{m['code']}/models/{md['CODIGO_FIPE']}/years")
                     gravados = 0
                     for a in anos:

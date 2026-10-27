@@ -1,0 +1,2 @@
+# Opcional: ditado transcrito no servidor (faster-whisper, CPU). Só instale se for usar o microfone fora do Chrome/Edge/Safari.
+faster-whisper==1.0.3

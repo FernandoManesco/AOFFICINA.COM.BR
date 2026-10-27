@@ -42,7 +42,7 @@
 </form></div></div></div>
 
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script src="/js/api.js?v=3"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script><script src="/js/ia.js?v=3"></script>
 <script>
 montarLayout();
 const $ = (id) => document.getElementById(id); const modal = new bootstrap.Modal('#m'); let lista = [], editId = null;
@@ -77,6 +77,7 @@ $('f').onsubmit = async (ev) => {
   try { if (editId) await API.editarServico(editId, d); else await API.criarServico(d); mostrarAlerta('Salvo'); modal.hide(); listar(); }
   catch (e) { mostrarAlerta(e.message, 'danger'); }
 };
+iaAtivar([{ id: 'descricao', campo: 'servico_descricao', rotulo: 'Descrição do serviço' }]);
 $('busca').oninput = debounce(listar); $('soAtivos').onchange = listar; listar();
 </script>
 </body>

@@ -22,6 +22,15 @@ async function apiCall(caminho, opcoes = {}) {
   return dados;
 }
 
+async function apiUpload(caminho, formData) {
+  const token = localStorage.getItem('token'); const cab = {};
+  if (token) cab['Authorization'] = 'Bearer ' + token;
+  const resp = await fetch(API_URL + caminho, { method: 'POST', headers: cab, body: formData });
+  let dados = null; try { dados = await resp.json(); } catch (_) {}
+  if (!resp.ok) throw new Error((dados && dados.detail) || ('Erro ' + resp.status));
+  return dados;
+}
+
 const _qs = (o) => {
   const p = Object.entries(o || {}).filter(([, v]) => v !== undefined && v !== null && v !== '');
   return p.length ? '?' + new URLSearchParams(p).toString() : '';
@@ -90,5 +99,11 @@ const API = {
   editPecaPedido: (id, item, d) => _put('/pedidos/' + id + '/pecas/' + item, d),
   delPecaPedido: (id, item) => _del('/pedidos/' + id + '/pecas/' + item),
   aprovarPedido: (id, d) => _post('/pedidos/' + id + '/aprovar', d),
+  // IA
+  iaStatus: () => apiCall('/ia/status'),
+  iaEscritaConfig: () => apiCall('/ia/escrita/config'),
+  iaCorrigir: (campo, texto) => _post('/ia/corrigir', { campo, texto }),
+  iaPesquisar: (d) => _post('/ia/pesquisar', d),
+  iaTranscrever: (fd) => apiUpload('/ia/transcrever', fd),
   statusPedido: (id, status) => _post('/pedidos/' + id + '/status' + _qs({ status })),
 };

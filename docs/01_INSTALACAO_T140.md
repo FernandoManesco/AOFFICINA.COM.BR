@@ -121,6 +121,21 @@ git remote add origin git@github.com:FernandoManesco/AOFFICINA.COM.BR.git
 git push -u origin main
 ```
 
+## 11. Assistente de IA (v3) — chaves
+As chaves do DeepSeek e do MyScript já existem no `.env` do nfe-servico; copie os valores (sem passar pelo chat):
+```bash
+# [ SERVIDOR ]
+cd /home/deploy/aofficina/api
+for k in DEEPSEEK_API_KEY MYSCRIPT_APP_KEY MYSCRIPT_HMAC_KEY; do v=$(grep "^$k=" /home/deploy/var/www/sistema-gestao/nfe-servico/.env | cut -d= -f2-); [ -n "$v" ] && sed -i "s|^$k=.*|$k=$v|" .env && echo "$k ok" || echo "$k nao encontrado no nfe-servico"; done
+sudo systemctl restart aofficina-api
+```
+Ditado no servidor (opcional; só para navegadores sem reconhecimento de voz próprio — o modelo whisper já baixado pelo WebTriagem é reaproveitado):
+```bash
+# [ SERVIDOR ]
+cd /home/deploy/aofficina/api && .venv/bin/pip install -r requirements-ia.txt && sudo systemctl restart aofficina-api
+```
+Conferir: `curl -s -H "Authorization: Bearer TOKEN" http://127.0.0.1:8300/ia/status` (ou abrir um pedido e clicar em ✨).
+
 ## Operação
 | Ação | Comando `[ SERVIDOR ]` |
 |---|---|

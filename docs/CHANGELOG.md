@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3 — 27/10/2026
+- Assistente de IA portado do WebTriagem: botões ✍️🎤✨ em queixa, diagnóstico, observações, serviço executado (pedido), descrição do serviço (mão de obra) e aplicação (peças).
+- Pesquisa por IA no pedido: "Pesquisar problema" (sintoma + veículo + km) e código de peça (lupa ao lado do lançamento de peça).
+- Rotas /ia/status, /ia/escrita/config, /ia/transcrever, /ia/corrigir, /ia/pesquisar; contexto_oficina.md.
+- Importador FIPE imprime progresso a cada 25 modelos.
+
 ## v0.2 — 27/10/2026
 - Telas: agenda por oficina (dia, colunas por mecânico e equipamento, conflito bloqueado), peças, mão de obra, oficinas/recursos, empresa, lista de orçamentos/pedidos, tela do pedido (itens, autorização por item, aprovação → pedido, execução pelo mecânico, status, impressão).
 - API: TIME das oficinas devolvido como HH:MM; edição de item de serviço preserva valor fechado ao mudar só o 'autorizado'.

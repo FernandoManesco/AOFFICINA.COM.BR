@@ -56,7 +56,7 @@ primeiro no T140, migrável para o servidor do cliente.
 | 0 | Infra no T140 (MySQL, venv, systemd, Nginx, DNS, certbot) | feito 27/10/2026 (DNS/certbot pendentes de propagação) |
 | 1 | Auth, empresa/oficinas/recursos, clientes+veículos, catálogo FIPE, agenda | **v2 — API e telas prontas** |
 | 2 | Peças, mão de obra, orçamento→pedido (itens, aprovação, execução, status, impressão) | **v2 — pronto** |
-| 2b | Diagnóstico por áudio/escrita no tablet (modelo WebTriagem); assistente DeepSeek (problemas, códigos de peça, correção de textos de mão de obra) | próxima (v3) — precisa dos repositórios WebTriagem e ia_gateway |
+| 2b | Assistente de IA (portado do WebTriagem): ✍️ escrita à mão (MyScript), 🎤 ditado (navegador ou whisper no servidor), ✨ correção de textos, 🔎 pesquisa de problema e de código de peça | **v3 — pronto** (precisa das chaves no .env) |
 | 3 | Estoque por lote (FIFO, validade, perda, mínimo), baixa no fechamento do pedido | |
 | 4 | Financeiro: contas a receber/pagar, pagamentos (PIX/cartão/dinheiro), boletos (clonar do homecare) | |
 | 5 | NFS-e (padrão nacional; GISS só Rio Claro), recibo/OS em PDF | |
@@ -69,3 +69,11 @@ primeiro no T140, migrável para o servidor do cliente.
 Não há API oficial. Usamos `fipe.parallelum.com.br/api/v2` (projeto deividfortuna/fipe): 500 req/dia sem token,
 1.000 com token grátis (`FIPE_TOKEN`). `scripts/importar_fipe.py` é retomável e só grava catálogo (sem preço).
 Veículo fora do catálogo é sempre permitido (marca/modelo digitados).
+
+## Assistente de IA (v3)
+- Backend: `api/utils/ia_deepseek.py`, `api/utils/transcricao.py`, `api/routers/ia.py`, contexto em `api/contexto_oficina.md`
+  (lido a cada chamada — edite sem reiniciar). Frontend: `web/js/ia.js` (`iaAtivar([...])`, `iaPesquisar(...)`).
+- Chaves no `.env`: `DEEPSEEK_API_KEY` (corrigir/pesquisar), `MYSCRIPT_APP_KEY`/`MYSCRIPT_HMAC_KEY` (escrita à mão — as mesmas
+  do WebTriagem), e opcionalmente `faster-whisper` (`requirements-ia.txt`) para ditado fora do Chrome/Edge/Safari.
+- O ditado no Chrome/Edge/Safari usa o reconhecimento do próprio navegador (sem custo, sem instalar nada). A escrita à mão
+  carrega a biblioteca iink do unpkg só quando o quadro é aberto (precisa de internet e das chaves).

@@ -43,9 +43,9 @@
           <div class="col-md-5"><label class="form-label small text-muted mb-0">Mecânico responsável</label><select class="form-select form-select-sm cab" id="funcionario_id"><option value="">—</option></select></div>
           <div class="col-md-4"><label class="form-label small text-muted mb-0">Previsão de entrega</label><input type="datetime-local" class="form-control form-control-sm cab" id="previsao_entrega"></div>
           <div class="col-md-6"><label class="form-label small text-muted mb-0">Queixa do cliente</label><textarea class="form-control form-control-sm cab" id="queixa" rows="3"></textarea></div>
-          <div class="col-md-6"><label class="form-label small text-muted mb-0">Diagnóstico do mecânico <span class="badge text-bg-light border no-print" title="Na v3: ditar por áudio ou escrever no tablet"><i class="bi bi-mic"></i> em breve</span></label><textarea class="form-control form-control-sm cab" id="diagnostico" rows="3"></textarea></div>
+          <div class="col-md-6"><label class="form-label small text-muted mb-0">Diagnóstico do mecânico</label><textarea class="form-control form-control-sm cab" id="diagnostico" rows="3"></textarea></div>
           <div class="col-12"><label class="form-label small text-muted mb-0">Observações</label><input class="form-control form-control-sm cab" id="observacao"></div>
-          <div class="col-12 no-print"><button class="btn btn-sm btn-outline-cobre" id="btnSalvarCab" disabled><i class="bi bi-check-lg me-1"></i>Salvar cabeçalho</button> <span class="small text-muted ms-2" id="guinchoTag"></span></div>
+          <div class="col-12 no-print d-flex flex-wrap gap-2 align-items-center"><button class="btn btn-sm btn-outline-cobre" id="btnSalvarCab" disabled><i class="bi bi-check-lg me-1"></i>Salvar cabeçalho</button><button class="btn btn-sm btn-outline-secondary" type="button" id="btnPesqProblema"><i class="bi bi-search me-1"></i>Pesquisar problema (IA)</button><span class="small text-muted" id="guinchoTag"></span></div>
         </div>
       </div></div>
     </div>
@@ -89,7 +89,7 @@
             <div class="col-md-6 position-relative"><label class="form-label small mb-0">Peça (código, part number, nome) ou descrição livre</label><input class="form-control" id="p_busca" autocomplete="off"><input type="hidden" id="p_id"><div class="list-group position-absolute shadow w-100 sug" id="p_sug" style="display:none"></div></div>
             <div class="col-md-2"><label class="form-label small mb-0">Qtd</label><input type="number" step="0.001" min="0.001" class="form-control" id="p_qtd" value="1"></div>
             <div class="col-md-3"><label class="form-label small mb-0">Valor unit. R$</label><input type="number" step="0.01" min="0" class="form-control" id="p_vu" placeholder="auto"></div>
-            <div class="col-md-1"><button class="btn btn-cobre w-100" id="btnAddPeca"><i class="bi bi-plus-lg"></i></button></div>
+            <div class="col-md-1 d-flex gap-1"><button class="btn btn-cobre flex-fill" id="btnAddPeca" title="Lançar"><i class="bi bi-plus-lg"></i></button><button class="btn btn-outline-secondary" type="button" id="btnPesqPeca" title="Pesquisar código da peça (IA)"><i class="bi bi-search"></i></button></div>
           </div>
         </div>
         <div class="table-responsive"><table class="table table-ao table-sm mb-0 mt-2">
@@ -125,7 +125,7 @@
 </form></div></div></div>
 
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=2"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script>
+<script src="/js/api.js?v=3"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script><script src="/js/ia.js?v=3"></script>
 <script>
 montarLayout();
 const $ = (id) => document.getElementById(id); const ID = parseInt(new URLSearchParams(location.search).get('id'));
@@ -241,6 +241,12 @@ async function mudar(s) {
   try { await API.statusPedido(ID, s); mostrarAlerta('Status: ' + s.replace('_', ' ')); carregar(); } catch (e) { mostrarAlerta(e.message, 'danger'); }
 }
 document.addEventListener('click', (ev) => { if (!ev.target.closest('.position-relative')) document.querySelectorAll('.sug').forEach(b => b.style.display = 'none'); });
+// ---- IA: ditar / escrever / corrigir nos textos; pesquisa de problema e de peça
+iaAtivar([{ id: 'queixa', campo: 'queixa', rotulo: 'Queixa do cliente' }, { id: 'diagnostico', campo: 'diagnostico', rotulo: 'Diagnóstico' },
+  { id: 'observacao', campo: 'observacao', rotulo: 'Observações' }, { id: 'exec_desc', campo: 'descricao_executado', rotulo: 'Serviço executado' }]);
+const veicIA = () => ({ marca: P && P.MARCA, modelo: P && P.MODELO, ano: P && (P.ANO_MODELO || P.ANO_FAB), combustivel: P && P.COMBUSTIVEL });
+$('btnPesqProblema').onclick = () => iaPesquisar('problema', [$('queixa').value, $('diagnostico').value].filter(Boolean).join('\n'), veicIA(), $('km_entrada').value || (P && P.KM_ATUAL));
+$('btnPesqPeca').onclick = () => iaPesquisar('peca', $('p_busca').value, veicIA(), null);
 carregar();
 </script>
 </body>

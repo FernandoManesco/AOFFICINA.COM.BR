@@ -13,7 +13,7 @@ from slowapi.util import get_remote_address
 
 import config
 from utils.auth import decodificar_token
-from routers import auth, empresa, clientes, veiculos, catalogo, agenda, pecas, servicos, pedidos
+from routers import auth, empresa, clientes, veiculos, catalogo, agenda, pecas, servicos, pedidos, ia
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("aofficina")
@@ -21,7 +21,7 @@ log = logging.getLogger("aofficina")
 dev = config.AMBIENTE == "dev"
 app = FastAPI(
     title="aOfficina API",
-    version="0.2.0",
+    version="0.3.0",
     docs_url="/docs" if dev else None,
     redoc_url=None,
     openapi_url="/openapi.json" if dev else None,
@@ -65,7 +65,7 @@ def health():
 
 
 for r in (auth.router, empresa.router, clientes.router, veiculos.router, catalogo.router, agenda.router,
-          pecas.router, servicos.router, pedidos.router):
+          pecas.router, servicos.router, pedidos.router, ia.router):
     app.include_router(r)
 
 log.info("Rotas registradas: %d", len(app.routes))
