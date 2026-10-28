@@ -11,19 +11,10 @@
   .item-exec { background: #f0faf2; }
   .item-nao { opacity: .55; text-decoration: line-through; }
   .sug { z-index: 1060; max-height: 240px; overflow: auto; }
-  @media print {
-    nav, footer, .sidebar-ao, .no-print, .btn { display: none !important; }
-    #conteudo { width: 100% !important; max-width: 100% !important; flex: 0 0 100% !important; }
-    .card-ao { box-shadow: none; border: 1px solid #ccc; }
-    .print-cab { display: flex !important; }
-  }
-
 </style>
 </head>
 <body data-pagina="pedidos">
 <main id="conteudo">
-  <div class="print-cab mb-3 d-none align-items-center gap-3"><img src="/img/aofficina-cobre.png" style="height:40px"><div><div class="fw-bold" id="pEmpresa"></div><div class="small" id="pEmpresaEnd"></div></div></div>
-
   <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
     <div class="d-flex align-items-center gap-2">
       <a class="btn btn-outline-secondary btn-sm no-print" href="/pages/pedidos.html"><i class="bi bi-arrow-left"></i></a><button class="btn btn-outline-cobre btn-sm no-print" type="button" onclick="abrirLeitorPlaca()" title="Localizar outro veículo pela placa"><i class="bi bi-camera"></i></button>
@@ -125,18 +116,18 @@
 </form></div></div></div>
 
 <script src="/vendor/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/js/api.js?v=3"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script><script src="/js/placa.js?v=3"></script><script src="/js/pagamento.js?v=4"></script><script src="/js/ia.js?v=3"></script>
+<script src="/js/api.js?v=3"></script><script src="/js/auth.js?v=2"></script><script src="/js/ui.js?v=2"></script><script src="/js/layout.js?v=2"></script><script src="/js/placa.js?v=3"></script><script src="/js/pagamento.js?v=4"></script><script src="/js/ia.js?v=3"></script><script src="/js/impressao.js?v=1"></script>
 <script>
 montarLayout();
 const $ = (id) => document.getElementById(id); const ID = parseInt(new URLSearchParams(location.search).get('id'));
 const mExec = new bootstrap.Modal('#mExec'), mAprov = new bootstrap.Modal('#mAprov');
-let P = null, funcs = [], execItem = null; const TRAVADOS = ['CONCLUIDO', 'ENTREGUE', 'FATURADO', 'CANCELADO'];
+let P = null, EMP = null, funcs = [], execItem = null; const TRAVADOS = ['CONCLUIDO', 'ENTREGUE', 'FATURADO', 'CANCELADO'];
 const nivel = getNivel();
 
 async function carregar() {
   try {
     if (!funcs.length) { funcs = (await API.getFuncionarios()).filter(f => f.ATIVO); const o = '<option value="">—</option>' + funcs.map(f => `<option value="${f.ID}">${esc(f.NOME)}</option>`).join(''); ['funcionario_id', 'exec_func', 'aprov_func'].forEach(i => $(i).innerHTML = o);
-      try { const e = await API.getEmpresa(); $('pEmpresa').textContent = e.FANTASIA || e.RAZAO_SOCIAL; $('pEmpresaEnd').textContent = [e.LOGRADOURO, e.NUMERO, e.BAIRRO, e.CIDADE, e.TELEFONE].filter(Boolean).join(' · '); } catch (_) {} }
+      try { EMP = await API.getEmpresa(); } catch (_) {} }
     P = await API.getPedido(ID); render();
   } catch (e) { mostrarAlerta(e.message, 'danger'); }
 }
@@ -171,7 +162,7 @@ function render() {
 
   // ações por estado
   const a = []; const st = (s, rot, cls = 'outline-secondary', ic = '') => a.push(`<button class="btn btn-sm btn-${cls}" onclick="mudar('${s}')">${ic}${rot}</button>`);
-  a.push(`<button class="btn btn-sm btn-outline-secondary" onclick="window.print()"><i class="bi bi-printer me-1"></i>Imprimir</button>`);
+  a.push(`<button class="btn btn-sm btn-outline-secondary" onclick="imprimir()"><i class="bi bi-printer me-1"></i>Imprimir</button>`);
   if (!ehPed) {
     if (P.STATUS === 'ABERTO') st('ENVIADO', 'Marcar como enviado ao cliente', 'outline-info', '<i class="bi bi-send me-1"></i>');
     if (['ABERTO', 'ENVIADO'].includes(P.STATUS) && nivel <= 2) { a.push(`<button class="btn btn-sm btn-success" onclick="abrirAprov()"><i class="bi bi-check2-circle me-1"></i>Aprovar → Pedido</button>`); st('RECUSADO', 'Recusado', 'outline-dark'); }
@@ -186,6 +177,7 @@ function render() {
   if (!['ENTREGUE', 'FATURADO', 'CANCELADO'].includes(P.STATUS) && nivel <= 1) st('CANCELADO', 'Cancelar', 'outline-danger');
   $('acoes').innerHTML = a.join('');
 }
+async function imprimir() { let pg = null; if (P.TIPO === 'PEDIDO') { try { pg = await API.getPagamentos(ID); } catch (_) {} } imprimirPedido(P, EMP, pg); }
 // ---- cabeçalho ----
 document.querySelectorAll('.cab, #desconto').forEach(e => e.addEventListener('input', () => $('btnSalvarCab').disabled = false));
 $('desconto').addEventListener('change', salvarCab);

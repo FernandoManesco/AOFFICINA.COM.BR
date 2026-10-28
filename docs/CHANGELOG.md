@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1 — 27/10/2026
+- Impressão do orçamento / ordem de serviço refeita (`web/js/impressao.js`): documento próprio em A4 com logo da empresa, marca d'água do símbolo aOfficina, blocos de cliente/veículo, relato e diagnóstico, tabelas de mão de obra e peças, totais, pagamentos, garantia (90 dias / CDC), condições e assinaturas. Sem botões nem ícones de IA no papel.
+- Site v3: menu realinhado; módulos "Placa pela câmera" e "Diagnóstico com IA".
+
 ## v0.4.0 — 27/10/2026
 - Fechamento com pagamento: tela "Receber e entregar" no pedido concluído — Dinheiro (troco), PIX (QR Code BR Code demonstrativo + copia e cola), Débito, Crédito (1 a 6x com valor da parcela), Boleto (exige CPF/CNPJ e endereço; fica em aberto com vencimento). Pagamento dividido; "Fechar pedido e entregar" só com o total coberto.
 - Tabela PAGAMENTO (v004) — base do WebFinanceiro. ENTREGUE agora só pelo fechamento com pagamento.
