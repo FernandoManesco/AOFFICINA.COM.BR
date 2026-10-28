@@ -2,6 +2,7 @@
 // Monta um documento próprio (#impressao) a partir dos dados já carregados na tela e chama window.print().
 // Uso: imprimirPedido(P, EMP, pagamentos)  — P = pedido com servicos/pecas; EMP = empresa; pagamentos = resumo (opcional)
 (function () {
+  ['/img/simbolo-cobre.png', '/img/aofficina-cobre.png', '/img/iaprocess-badge.png'].forEach(u => { const i = new Image(); i.src = u; });
   const CSS = `
   #impressao { display: none; }
   @media print {
@@ -13,14 +14,15 @@
   }
   #impressao { font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #23272e; font-size: 10.5pt; line-height: 1.38; position: relative; }
   #impressao * { box-sizing: border-box; }
-  #impressao .marca-dagua { position: fixed; left: 50%; top: 50%; width: 120mm; transform: translate(-50%, -50%); opacity: .045; z-index: 0; pointer-events: none; }
+  #impressao .marca-dagua { position: fixed; left: 50%; top: 50%; width: 120mm; transform: translate(-50%, -50%); opacity: .09; z-index: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; pointer-events: none; }
   #impressao .doc { position: relative; z-index: 1; }
   #impressao .cab { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 4mm; border-bottom: 2px solid #B87333; }
   #impressao .cab img { height: 13mm; }
   #impressao .cab .emp { text-align: right; font-size: 9pt; color: #555; }
   #impressao .cab .emp b { display: block; font-size: 11.5pt; color: #23272e; }
   #impressao .tit { display: flex; justify-content: space-between; align-items: flex-end; margin: 6mm 0 4mm; }
-  #impressao .tit h1 { margin: 0; font-size: 19pt; font-weight: 700; letter-spacing: .2px; }
+  #impressao .tit h1 { margin: 0; font-size: 19pt; font-weight: 700; letter-spacing: .2px; white-space: nowrap; flex-shrink: 0; }
+  #impressao .tit > div { max-width: 60%; }
   #impressao .tit h1 small { display: block; font-size: 8.5pt; font-weight: 600; color: #B87333; letter-spacing: 1.6px; text-transform: uppercase; }
   #impressao .pill { display: inline-block; padding: 1.2mm 3.5mm; border-radius: 99px; font-size: 8pt; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; border: 1.2px solid #B87333; color: #B87333; }
   #impressao .pill.ok { background: #B87333; color: #fff; }
@@ -103,7 +105,7 @@
         <div class="emp"><b>${esc(emp[0] || '')}</b>${emp.slice(1).filter(Boolean).map(esc).join('<br>')}</div></div>
 
       <div class="tit">
-        <h1><small>${ehPed ? 'Ordem de serviço' : 'Proposta de orçamento'}</small>Nº ${numero}${ehPed && P.NUMERO_ORCAMENTO ? ` <span style="font-size:10pt;font-weight:500;color:#888">· origem: orçamento ${P.NUMERO_ORCAMENTO}</span>` : ''}</h1>
+        <h1><small>${ehPed ? 'Ordem de serviço' : 'Proposta de orçamento'}</small>Nº ${numero}${ehPed && P.NUMERO_ORCAMENTO ? ` <span style="font-size:10pt;font-weight:500;color:#888;white-space:nowrap">· origem: orçamento ${P.NUMERO_ORCAMENTO}</span>` : ''}</h1>
         <div style="text-align:right"><span class="pill ${fechado ? 'ok' : ''}">${STATUS_ROT[P.STATUS] || P.STATUS}</span>
           <div class="datas" style="margin-top:2mm">${datas.map(x => `<span>${x[0]} <b>${x[1]}</b></span>`).join('')}</div></div>
       </div>
@@ -162,6 +164,9 @@
       <div class="fim"></div>
     </div>
     <div class="rod"><span><img src="/img/iaprocess-badge.png" alt="">aOfficina · <b>IA PROCESS AUTOMATION</b></span><span>${titulo} nº ${numero} · emitido em ${new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span></div>`;
-    window.print();
+    // espera as imagens (marca d'água, logo, selo) carregarem antes de abrir a impressão — senão saem em branco
+    const imgs = Array.from(el.querySelectorAll('img'));
+    const prontas = imgs.map(i => (i.complete && i.naturalWidth) ? Promise.resolve() : new Promise(r => { i.onload = i.onerror = r; }));
+    Promise.race([Promise.all(prontas), new Promise(r => setTimeout(r, 4000))]).then(() => setTimeout(() => window.print(), 150));
   };
 })();
