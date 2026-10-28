@@ -39,9 +39,16 @@ h1,h2,h3{font-family:var(--font-d);font-weight:600;letter-spacing:.005em;margin:
 .nav.on{background:rgba(6,20,32,.78);backdrop-filter:blur(14px);border-color:var(--line)}
 .nav .wrap{display:flex;align-items:center;justify-content:space-between;height:76px}
 .nav img{height:34px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.4))}
-.nav ul{display:flex;gap:2rem;list-style:none;margin:0;padding:0;font-size:.86rem;font-weight:500;color:var(--ink-2)}
+.nav .wrap{gap:1.2rem}
+.nav ul{display:flex;gap:1.5rem;list-style:none;margin:0;padding:0;font-size:.86rem;font-weight:500;color:var(--ink-2);white-space:nowrap}
 .nav ul a:hover{color:var(--aqua)}
-@media(max-width:900px){.nav ul{display:none}}
+.nav .acoes{display:flex;gap:.6rem;align-items:center;flex-shrink:0}
+.nav .acoes .btn{white-space:nowrap;padding:.65rem 1.1rem;font-size:.84rem}
+@media(max-width:1280px){.nav ul{gap:1.1rem;font-size:.82rem}}
+@media(max-width:1100px){.nav .acoes .btn-ghost{display:none}}
+@media(max-width:900px){.nav ul{display:none}.nav .acoes .btn-ghost{display:inline-flex}}
+@media(max-width:560px){.nav .acoes .btn{padding:.55rem .8rem;font-size:.78rem}.nav img{height:28px}}
+@media(max-width:480px){.nav .acoes .btn-ghost{display:none}}
 
 /* hero */
 .hero{position:relative;min-height:100vh;display:grid;align-items:center;overflow:hidden;isolation:isolate}
@@ -206,7 +213,7 @@ footer .fim{grid-column:1/-1;border-top:1px solid var(--line);padding-top:1.4rem
 <nav class="nav" id="nav"><div class="wrap">
   <a href="#topo"><img src="/img/logo-prata.png" alt="aOfficina"></a>
   <ul><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#fluxo">Como funciona</a></li><li><a href="#telas">O sistema</a></li><li><a href="#ia">Inteligência</a></li><li><a href="#financeiro">Financeiro</a></li><li><a href="#licenca">Licença</a></li><li><a href="#faq">Perguntas</a></li></ul>
-  <div style="display:flex;gap:.6rem;align-items:center"><a class="btn btn-ghost" href="https://app.aofficina.com.br" style="padding:.7rem 1.1rem;font-size:.85rem">Entrar no sistema</a><a class="btn btn-aqua" href="#contato" style="padding:.7rem 1.2rem;font-size:.85rem">Agendar demonstração</a></div>
+  <div class="acoes"><a class="btn btn-ghost" href="https://app.aofficina.com.br">Entrar no sistema</a><a class="btn btn-aqua" href="#contato">Agendar demonstração</a></div>
 </div></nav>
 
 <header class="hero" id="topo">
@@ -254,6 +261,33 @@ footer .fim{grid-column:1/-1;border-top:1px solid var(--line);padding-top:1.4rem
       <p>O orçamento lista serviços e peças; o cliente autoriza o que quer. Aprovado, vira pedido numerado sem redigitar nada. O mecânico registra o que executou no tablet; o pedido só pode ser concluído quando tudo o que foi autorizado foi feito. Totais sempre recalculados pelo servidor — sem conta errada no caixa.</p>
       <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20or%C3%A7amento%20e%20ordem%20de%20servi%C3%A7o%20no%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
     <figure class="frame" style="margin:0"><div class="bar"><i></i><i></i><i></i></div><img src="/img/tela-pedido.png" alt="Pedido" loading="lazy"></figure>
+  </div>
+
+  <div class="mod inv r" id="m-camera">
+    <div class="txt"><p class="eyebrow">Placa pela câmera do tablet</p><h3>O mecânico aponta a câmera para a placa e o pedido do carro abre.</h3>
+      <p class="prob">"Qual é a OS desse Corolla? Deixa eu voltar na recepção para perguntar."</p>
+      <p>No tablet, um botão abre a câmera; ao focar a placa, o sistema lê os caracteres e localiza o pedido em andamento daquele veículo. Se não há pedido aberto, mostra o histórico de atendimentos do carro na oficina — datas, quilometragem, serviços e peças — e oferece abrir um orçamento novo ali mesmo, no box, sem digitar nada.</p>
+      <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20a%20leitura%20de%20placa%20pela%20c%C3%A2mera%20no%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
+    <div class="panel"><div class="tag">exemplo · leitura da placa no box</div>
+      <div class="l"><span>📷 Placa lida</span><b>BRA2E19</b></div>
+      <div class="l"><span>Veículo</span><b>Toyota Corolla XEi 2021 · 61.300 km</b></div>
+      <div class="l"><span>Pedido em andamento</span><b>Nº 1042 · em execução</b></div>
+      <div class="l"><span>Último atendimento</span><b>14/08 · revisão 60 mil + pastilhas</b></div>
+      <div class="tot"><span>Ação</span><span>Abrir pedido 1042 →</span></div></div>
+  </div>
+
+  <div class="mod r" id="m-diagnostico">
+    <div class="txt"><p class="eyebrow">Diagnóstico com inteligência artificial</p><h3>O mecânico descreve o sintoma; a IA aponta por onde começar.</h3>
+      <p class="prob">"Barulho na frente ao passar em lombada. Pode ser dez coisas — por qual eu começo?"</p>
+      <p>No pedido, o mecânico dita ou escreve a queixa do cliente e o que observou. Com um toque, a IA cruza sintoma, modelo, ano e quilometragem e devolve as causas prováveis em ordem, como verificar cada uma e as peças envolvidas. Também corrige e formata o texto do diagnóstico e do serviço executado em linguagem profissional para o cliente — sempre com aceite da pessoa; nada entra no pedido sem revisão.</p>
+      <a class="wa" href="https://wa.me/5519996085277?text=Quero%20saber%20sobre%20o%20diagn%C3%B3stico%20com%20IA%20no%20aOfficina" target="_blank" rel="noopener">Perguntar sobre este módulo no WhatsApp →</a></div>
+    <div class="panel"><div class="tag">exemplo ilustrativo · pesquisa de problema</div>
+      <div class="l"><span>Sintoma</span><b>batida seca na dianteira em lombadas</b></div>
+      <div class="l"><span>Veículo</span><b>Honda HR-V 2018 · 92.000 km</b></div>
+      <div class="l"><span>1ª causa provável</span><b>bieleta da barra estabilizadora</b></div>
+      <div class="l"><span>2ª causa provável</span><b>coxim / batente do amortecedor</b></div>
+      <div class="l"><span>Como verificar</span><b>carro suspenso, folga manual na bieleta</b></div>
+      <div class="tot"><span>Resposta gerada por IA</span><span>confirmar no veículo</span></div></div>
   </div>
 
   <div class="mod inv r" id="m-mao">
