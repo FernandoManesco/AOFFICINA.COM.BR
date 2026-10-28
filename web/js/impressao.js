@@ -30,7 +30,7 @@
   #impressao .datas span { display: inline-block; margin-left: 4mm; }
   #impressao .datas b { color: #23272e; font-weight: 600; }
   #impressao .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
-  #impressao .box { border: 1px solid #dfe3e8; border-radius: 2.5mm; padding: 3mm 4mm; break-inside: avoid; background: rgba(255,255,255,.75); }
+  #impressao .box { border: 1px solid #dfe3e8; border-radius: 2.5mm; padding: 3mm 4mm; break-inside: avoid; background: transparent; }
   #impressao .box .rot { font-size: 7.5pt; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #B87333; margin-bottom: 1.2mm; }
   #impressao .box .nome { font-size: 12pt; font-weight: 700; }
   #impressao .box .sub { font-size: 9pt; color: #555; }
@@ -44,7 +44,7 @@
   #impressao th { text-align: left; font-size: 7.5pt; letter-spacing: 1px; text-transform: uppercase; color: #777; font-weight: 600; padding: 1.5mm 2mm; border-bottom: 1px solid #dfe3e8; }
   #impressao td { padding: 2mm; border-bottom: 1px solid #eef0f3; vertical-align: top; }
   #impressao tr { break-inside: avoid; }
-  #impressao tbody tr:nth-child(even) td { background: rgba(246,247,249,.8); }
+  #impressao tbody tr:nth-child(even) td { background: rgba(120,130,150,.07); }
   #impressao .r { text-align: right; white-space: nowrap; }
   #impressao .c { text-align: center; }
   #impressao .cod { font-family: "Consolas", "Courier New", monospace; font-size: 8.5pt; color: #888; margin-left: 1.5mm; }
@@ -59,12 +59,12 @@
   #impressao .tot .total td { border-top: 1.5px solid #23272e; font-size: 13pt; font-weight: 700; padding-top: 2mm; }
   #impressao .tot .total td.r { color: #B87333; }
   #impressao .gar { margin-top: 6mm; display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; break-inside: avoid; }
-  #impressao .gar .box { background: #fbf6f1; border-color: #e8d5c4; }
+  #impressao .gar .box { background: rgba(184,115,51,.05); border-color: #e8d5c4; }
   #impressao .gar p { margin: 0; font-size: 8.8pt; color: #444; }
   #impressao .ass { display: grid; grid-template-columns: 1fr 1fr; gap: 14mm; margin-top: 16mm; break-inside: avoid; }
   #impressao .ass div { border-top: 1px solid #23272e; padding-top: 1.5mm; font-size: 8.5pt; color: #555; text-align: center; }
   #impressao .ass div b { display: block; color: #23272e; font-size: 9.5pt; }
-  #impressao .rod { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: #888; border-top: 1px solid #e3e6ea; padding-top: 1.5mm; background: #fff; }
+  #impressao .rod { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: #888; border-top: 1px solid #e3e6ea; padding-top: 1.5mm; background: transparent; }
   #impressao .rod img { height: 6mm; vertical-align: middle; margin-right: 2mm; }
   #impressao .rod b { color: #B87333; font-weight: 700; }
   #impressao .fim { height: 10mm; }
