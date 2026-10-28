@@ -58,12 +58,16 @@
   #impressao .tot td { border: 0; padding: 1mm 2mm; }
   #impressao .tot .total td { border-top: 1.5px solid #23272e; font-size: 13pt; font-weight: 700; padding-top: 2mm; }
   #impressao .tot .total td.r { color: #B87333; }
-  #impressao .gar { margin-top: 6mm; display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; break-inside: avoid; }
+  #impressao .pag2 { break-before: page; page-break-before: always; display: flex; flex-direction: column; min-height: 240mm; }
+  #impressao .pag2 h2 { margin-top: 0; }
+  #impressao .gar { margin-top: 4mm; display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; break-inside: avoid; }
   #impressao .gar .box { background: rgba(184,115,51,.05); border-color: #e8d5c4; }
   #impressao .gar p { margin: 0; font-size: 8.8pt; color: #444; }
-  #impressao .ass { display: grid; grid-template-columns: 1fr 1fr; gap: 14mm; margin-top: 16mm; break-inside: avoid; }
-  #impressao .ass div { border-top: 1px solid #23272e; padding-top: 1.5mm; font-size: 8.5pt; color: #555; text-align: center; }
-  #impressao .ass div b { display: block; color: #23272e; font-size: 9.5pt; }
+  #impressao .ass { display: grid; grid-template-columns: 1fr 1fr; gap: 14mm; margin-top: auto; padding-top: 30mm; break-inside: avoid; }
+  #impressao .ass .slot { position: relative; }
+  #impressao .ass .slot img { position: absolute; left: 50%; bottom: 2mm; transform: translateX(-50%); height: 22mm; max-width: 70mm; object-fit: contain; }
+  #impressao .ass .lin { border-top: 1px solid #23272e; padding-top: 1.5mm; font-size: 8.5pt; color: #555; text-align: center; }
+  #impressao .ass .lin b { display: block; color: #23272e; font-size: 9.5pt; }
   #impressao .rod { position: fixed; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; font-size: 7.5pt; color: #888; border-top: 1px solid #e3e6ea; padding-top: 1.5mm; background: transparent; }
   #impressao .rod img { height: 6mm; vertical-align: middle; margin-right: 2mm; }
   #impressao .rod b { color: #B87333; font-weight: 700; }
@@ -152,15 +156,21 @@
           <td>${x.PAGO ? '<b style="color:#2e7d4f">Pago</b>' + (x.PAGO_EM ? ' em ' + data(x.PAGO_EM) : '') : 'Em aberto'}</td><td class="r"><b>${formatarMoeda(x.VALOR_CENT)}</b></td></tr>`).join('')}
       </tbody></table>` : ''}
 
+      <div class="pag2">
+      <h2>${ehPed ? 'Garantia e condições' : 'Validade e garantia'} <span>${titulo} nº ${numero} · ${esc(P.CLIENTE_NOME)} · ${esc(formatarPlaca(P.PLACA))}</span></h2>
       ${ehPed ? `<div class="gar">
-        <div class="box"><div class="rot">Garantia</div><p><b>${g.prazo}</b></p><p style="margin-top:1mm">${g.cond}</p></div>
+        <div class="box"><div class="rot">Garantia</div><p><b>${g.prazo}</b></p><p style="margin-top:1mm">${EMP.TEXTO_GARANTIA ? esc(EMP.TEXTO_GARANTIA) : g.cond}</p></div>
         <div class="box"><div class="rot">Condições</div><p>Serviços e peças executados conforme autorização do cliente, item a item. Valores conferidos no fechamento. A retirada do veículo implica a aceitação dos serviços descritos neste documento. Em caso de dúvida sobre a garantia, apresente este documento na oficina.</p></div>
       </div>` : `<div class="gar">
         <div class="box"><div class="rot">Validade da proposta</div><p>Este orçamento é válido por <b>10 dias</b> a partir de ${data(P.ABERTO_EM)}. Preços de peças sujeitos a confirmação com o fornecedor no momento da aprovação. Itens não autorizados não serão executados.</p></div>
         <div class="box"><div class="rot">Garantia</div><p>Serviços e peças fornecidos pela oficina têm garantia de <b>90 dias</b> a partir da entrega do veículo, conforme o Código de Defesa do Consumidor, nas condições descritas na ordem de serviço.</p></div>
       </div>`}
-
-      <div class="ass"><div><b>${esc(P.CLIENTE_NOME)}</b>${ehPed ? 'Cliente · ciente dos serviços executados' : 'Cliente · de acordo com o orçamento'}</div><div><b>${esc(emp[0] || 'Oficina')}</b>Responsável pela oficina</div></div>
+      <p style="margin:auto 0 0;text-align:center;font-size:10pt;color:#444;padding-top:20mm">${esc(EMP.CIDADE || "")}${EMP.CIDADE ? ", " : ""}${new Date(P.ENTREGUE_EM || P.CONCLUIDO_EM || Date.now()).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" })}</p>
+      <div class="ass" style="margin-top:0;padding-top:22mm">
+        <div class="slot"><div class="lin"><b>${esc(P.CLIENTE_NOME)}</b>${ehPed ? 'Cliente · ciente dos serviços executados' : 'Cliente · de acordo com o orçamento'}</div></div>
+        <div class="slot"><img src="/img/assinatura.png" alt="" onerror="this.style.display='none'"><div class="lin"><b>${esc(emp[0] || 'Oficina')}</b>Responsável pela oficina</div></div>
+      </div>
+      </div>
       <div class="fim"></div>
     </div>
     <div class="rod"><span><img src="/img/iaprocess-badge.png" alt="">aOfficina · <b>IA PROCESS AUTOMATION</b></span><span>${titulo} nº ${numero} · emitido em ${new Date().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span></div>`;
