@@ -127,6 +127,17 @@ section{padding:110px 0}
 .frame figcaption{padding:.9rem 1.1rem;font-size:.86rem;color:var(--muted);border-top:1px solid var(--line)}
 .screens .col{display:grid;gap:1.4rem}
 @media(max-width:900px){.screens{grid-template-columns:1fr}}
+section{scroll-margin-top:90px}
+.video{max-width:1100px;margin:0 auto}
+.video .frame{position:relative;cursor:pointer}
+.video .frame::before{content:"";display:block;padding-top:56.25%}
+.video .frame img,.video .frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video .frame img{object-fit:cover;filter:brightness(.75)}
+.video .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px;border-radius:50%;background:var(--aqua);display:grid;place-items:center;box-shadow:0 20px 60px -15px rgba(63,210,199,.8);transition:transform .3s}
+.video .play::after{content:"";margin-left:8px;border-left:30px solid var(--n950);border-top:18px solid transparent;border-bottom:18px solid transparent}
+.video .frame:hover .play{transform:translate(-50%,-50%) scale(1.08)}
+.video .cap{text-align:center;color:var(--ink-2);margin-top:1rem;font-size:.95rem}
+
 
 /* IA */
 .ia{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
@@ -212,7 +223,7 @@ footer .fim{grid-column:1/-1;border-top:1px solid var(--line);padding-top:1.4rem
 
 <nav class="nav" id="nav"><div class="wrap">
   <a href="#topo"><img src="/img/logo-prata.png" alt="aOfficina"></a>
-  <ul><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#fluxo">Como funciona</a></li><li><a href="#telas">O sistema</a></li><li><a href="#ia">Inteligência</a></li><li><a href="#financeiro">Financeiro</a></li><li><a href="#licenca">Licença</a></li><li><a href="#faq">Perguntas</a></li></ul>
+  <ul><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#fluxo">Como funciona</a></li><li><a href="#telas">O sistema</a></li><li><a href="#video">Vídeo</a></li><li><a href="#ia">Inteligência</a></li><li><a href="#financeiro">Financeiro</a></li><li><a href="#licenca">Licença</a></li><li><a href="#faq">Perguntas</a></li></ul>
   <div class="acoes"><a class="btn btn-ghost" href="https://app.aofficina.com.br">Entrar no sistema</a><a class="btn btn-aqua" href="#contato">Agendar demonstração</a></div>
 </div></nav>
 
@@ -335,6 +346,17 @@ footer .fim{grid-column:1/-1;border-top:1px solid var(--line);padding-top:1.4rem
   </div>
 </div></section>
 
+<section id="video" style="padding-top:0"><div class="wrap">
+  <div class="head r"><p class="eyebrow">Apresentação</p><h2>Quatro minutos: o problema, a arquitetura e o sistema funcionando.</h2><p class="lead">Da leitura da placa pela câmera à ordem de serviço impressa com garantia — gravado no sistema real.</p></div>
+  <div class="video r">
+    <div class="frame" id="ytFrame" onclick="carregarVideo()" role="button" aria-label="Assistir à apresentação do aOfficina">
+      <img src="/img/video-capa.jpg" alt="Apresentação do aOfficina" loading="lazy">
+      <div class="play"></div>
+    </div>
+    <p class="cap">O vídeo carrega do YouTube só quando você clica em assistir. <a href="https://www.youtube.com/watch?v=MaEP-0KNqUI" target="_blank" rel="noopener" style="color:var(--aqua)">Abrir no YouTube →</a></p>
+  </div>
+</div></section>
+
 <section id="ia"><div class="wrap ia">
   <div class="r">
     <p class="eyebrow">Inteligência artificial</p>
@@ -417,7 +439,7 @@ footer .fim{grid-column:1/-1;border-top:1px solid var(--line);padding-top:1.4rem
     <div class="ia-brand"><img src="/img/iaprocess-badge.png" alt="IA Process Automation"><div><b>IA PROCESS AUTOMATION</b><span>Fernando Manesco</span></div></div>
     <p style="margin-top:1.2rem;max-width:40ch;color:var(--muted);font-size:.86rem">Software de gestão e automação com inteligência artificial para empresas de serviço. Criadores do aOfficina, WebHomeCare, WebFinanceiro e webNfe.</p>
   </div>
-  <div><h4>aOfficina</h4><ul><li><a href="https://app.aofficina.com.br">Entrar no sistema</a></li><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#telas">O sistema</a></li><li><a href="#ia">Inteligência artificial</a></li><li><a href="#financeiro">Financeiro e tributário</a></li><li><a href="#licenca">Licença</a></li></ul></div>
+  <div><h4>aOfficina</h4><ul><li><a href="https://app.aofficina.com.br">Entrar no sistema</a></li><li><a href="#diferenciais">Diferenciais</a></li><li><a href="#telas">O sistema</a></li><li><a href="#video">Apresentação em vídeo</a></li><li><a href="#ia">Inteligência artificial</a></li><li><a href="#financeiro">Financeiro e tributário</a></li><li><a href="#licenca">Licença</a></li></ul></div>
   <div><h4>Contato</h4><ul><li><a href="https://wa.me/5519996085277" target="_blank" rel="noopener">WhatsApp (19) 99608-5277</a></li><li>Rio Claro · São Paulo · Brasil</li><li><a href="/privacidade.html">Política de privacidade</a></li></ul></div>
   <div class="fim"><span>© <span id="ano"></span> IA Process Automation · aofficina.com.br</span><span>Fotos ilustrativas. Marcas de veículos citadas pertencem aos seus fabricantes.</span></div>
 </div></footer>
@@ -430,6 +452,7 @@ footer .fim{grid-column:1/-1;border-top:1px solid var(--line);padding-top:1.4rem
     const tentar = (src, prox) => { const t = new Image(); t.onload = () => { img.src = src; img.classList.add('ok'); }; t.onerror = prox || (() => {}); t.src = src; };
     tentar(img.dataset.src, () => img.dataset.alt && tentar(img.dataset.alt));
   });
+  function carregarVideo(){ const f=document.getElementById('ytFrame'); f.onclick=null; f.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/MaEP-0KNqUI?autoplay=1&rel=0&hl=pt-BR" title="Apresentação do aOfficina" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>'; }
   // nav sólida ao rolar
   const nav = document.getElementById('nav'); const onS = () => nav.classList.toggle('on', scrollY > 40); onS(); addEventListener('scroll', onS, { passive: true });
   // revelar ao entrar na tela
