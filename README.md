@@ -6,6 +6,7 @@ oficina** (venda, não aluguel), hospedado inicialmente em servidor da IA Proces
 
 - Site: https://aofficina.com.br · App: https://app.aofficina.com.br · API: https://api.aofficina.com.br
 - Repositório: `FernandoManesco/AOFFICINA.COM.BR` · Início: 27/10/2026 · Versão atual: **0.4.0**
+- assiata no youtube : https://youtu.be/MaEP-0KNqUI
 
 ## Stack
 
